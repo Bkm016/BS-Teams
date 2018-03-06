@@ -9,6 +9,7 @@ import com.github.bkm016.bsteams.command.BSTeamsCommand;
 import com.github.bkm016.bsteams.database.Data;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
+import com.github.bkm016.spigot.book.aa;
 
 import lombok.Getter;
 import me.skymc.taboolib.string.language2.Language2;
@@ -43,6 +44,9 @@ public class BSTeamsPlugin extends JavaPlugin {
 		
 		// 载入 Language2
 		language = new Language2(this);
+		
+		// 监听器
+		Bukkit.getPluginManager().registerEvents(new aa(), this);
 	}
 	
 	@Override

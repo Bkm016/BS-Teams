@@ -5,7 +5,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -22,6 +21,7 @@ import java.util.regex.Pattern;
  * The NMS helper for all the Book-API
  */
 public final class BookReflection {
+	
     private static final String version;
     private static final boolean doubleHands;
 
@@ -30,12 +30,13 @@ public final class BookReflection {
     private static final Method chatSerializerA;
 
     private static final Method craftPlayerGetHandle;
+    
     //This method takes an enum that represents the player's hand only in versions >= 1.9
     //In the other versions it only takes the nms item
     private static final Method entityPlayerOpenBook;
+    
     //only version >= 1.9
     private static final Object[] hands;
-
 
     //Older versions
     /*private static final Field entityHumanPlayerConnection;
@@ -125,6 +126,25 @@ public final class BookReflection {
             throw new UnsupportedVersionException(e);
         }
     }
+    
+    /**
+     * Append the pages of the book to the components json equivalent
+     * @param meta the book meta to change
+     * @param components the pages of the book
+     */
+    @SuppressWarnings("unchecked")//reflections = unchecked warnings
+    public static void addPages(BookMeta meta, BaseComponent[][] components) {
+    	try {
+            List<Object> pages = (List<Object>) craftMetaBookField.get(meta);
+            for(BaseComponent[] c : components) {
+                final String json = ComponentSerializer.toString(c);
+                //System.out.println("page:" + json); //Debug
+                pages.add(chatSerializerA.invoke(null, json));
+            }
+        } catch (Exception e) {
+            throw new UnsupportedVersionException(e);
+        }
+    }
 
     /**
      * Opens the book to a player (the player needs to have the book in one of his hands)
@@ -185,9 +205,7 @@ public final class BookReflection {
      * @return a Chat-Component equivalent of the parameter
      */
     public static BaseComponent[] jsonToComponents(String json) {
-        return new BaseComponent[] {
-                new TextComponent(json)
-        };
+        return new BaseComponent[] { new TextComponent(json) };
     }
 
     /**
@@ -199,7 +217,6 @@ public final class BookReflection {
         try {
             //net.minecraft.server.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
             Object nmsItemStack = nmsCopy(item);
-
 
             //net.minecraft.server.NBTTagCompound compound = new NBTTagCompound();
             //compound = nmsItemStack.save(compound);
@@ -216,6 +233,11 @@ public final class BookReflection {
      */
     public static class UnsupportedVersionException extends RuntimeException {
         /**
+		 * serialVersionUID
+		 */
+		private static final long serialVersionUID = 6835583513394319946L;
+		
+		/**
          * The current running version
          */
         @Getter

@@ -2,7 +2,6 @@ package com.github.bkm016.spigot.book;
 
 import org.bukkit.Achievement;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 
 import static org.bukkit.Achievement.*;

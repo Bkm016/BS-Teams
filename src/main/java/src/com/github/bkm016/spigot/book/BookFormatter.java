@@ -1,6 +1,5 @@
 package com.github.bkm016.spigot.book;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -9,9 +8,9 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+
 import org.bukkit.Achievement;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -20,46 +19,53 @@ import org.bukkit.inventory.meta.BookMeta;
 
 import java.util.*;
 
+@SuppressWarnings("deprecation")
 public final class BookFormatter {
-    private static final boolean canTranslateDirectly;
-
-    static {
-        boolean success = true;
-        try {
-            ChatColor.BLACK.asBungee();
-        } catch (NoSuchMethodError e) {
-            success = false;
-        }
-        canTranslateDirectly = success;
-    }
-
 
     /**
      * Opens a book GUI to the player
      * @param p the player
      * @param book the book to be opened
      */
-    @SuppressWarnings("deprecation")
     public static void openPlayer(Player p, ItemStack book) {
         CustomBookOpenEvent event = new CustomBookOpenEvent(p, book, false);
         //Call the CustomBookOpenEvent
         Bukkit.getPluginManager().callEvent(event);
         //Check if it's cancelled
-        if(event.isCancelled())
+        if(event.isCancelled()) {
             return;
+        }
+        
+        //Close inventory currently
         p.closeInventory();
         //Store the previous item
         ItemStack hand = p.getItemInHand();
-
         p.setItemInHand(event.getBook());
-        p.updateInventory();
 
         //Opening the GUI
         BookReflection.openBook(p, event.getBook(), event.getHand() == CustomBookOpenEvent.Hand.OFF_HAND);
 
         //Returning whatever was on hand.
         p.setItemInHand(hand);
-        p.updateInventory();
+    }
+    
+    /**
+     * Opens a book GUI to the player, Bypass the {@link CustomBookOpenEvent}
+     * @param p the player
+     * @param book the book to be opened
+     */
+    public static void forceOpen(Player p, ItemStack book) {
+    	//Close inventory currently
+        p.closeInventory();
+        //Store the previous item
+        ItemStack hand = p.getItemInHand();
+        p.setItemInHand(book);
+
+        //Opening the GUI
+        BookReflection.openBook(p, book, false);
+
+        //Returning whatever was on hand.
+        p.setItemInHand(hand);
     }
 
     /**
@@ -69,7 +75,14 @@ public final class BookFormatter {
     public static BookBuilder writtenBook() {
         return new BookBuilder(new ItemStack(Material.WRITTEN_BOOK));
     }
-
+    
+    /**
+     * Creates a BookBuilder instance with a written book as the Itemstack's type
+     * @return
+     */
+    public static BookBuilder writtenBook(String title, String author) {
+        return new BookBuilder(new ItemStack(Material.WRITTEN_BOOK), title, author);
+    }
 
     /**
      * Helps the user to create a book
@@ -85,6 +98,17 @@ public final class BookFormatter {
         public BookBuilder(ItemStack book) {
             this.book = book;
             this.meta = (BookMeta)book.getItemMeta();
+        }
+        
+        /**
+         * Creates a new instance of the BookBuilder from an ItemStack representing the book item
+         * @param book the book's ItemStack
+         */
+        public BookBuilder(ItemStack book, String title, String author) {
+            this.book = book;
+            this.meta = (BookMeta)book.getItemMeta();
+            this.meta.setTitle(title);
+            this.meta.setAuthor(author);
         }
 
         /**
@@ -104,6 +128,17 @@ public final class BookFormatter {
          */
         public BookBuilder author(String author) {
             meta.setAuthor(author);
+            return this;
+        }
+        
+        /**
+         * Sets the generation of the book
+         * Only works from MC 1.10
+         * @param generation the Book generation
+         * @return the BookBuilder calling instance
+         */
+        public BookBuilder generation(BookMeta.Generation generation) {
+            meta.setGeneration(generation);
             return this;
         }
 
@@ -146,15 +181,14 @@ public final class BookFormatter {
             BookReflection.setPages(meta, pages.toArray(new BaseComponent[0][]));
             return this;
         }
-
+        
         /**
-         * Sets the generation of the book
-         * Only works from MC 1.10
-         * @param generation the Book generation
-         * @return the BookBuilder calling instance
+         * Append the pages of the book
+         * @param pages the pages of the book
+         * @return the BookBuilder's calling instance
          */
-        public BookBuilder generation(BookMeta.Generation generation) {
-            meta.setGeneration(generation);
+        public BookBuilder addPages(BaseComponent[]... pages) {
+        	BookReflection.addPages(meta, pages);
             return this;
         }
 
@@ -222,6 +256,14 @@ public final class BookFormatter {
             this.text.add(new TextComponent("\n"));
             return this;
         }
+        
+        /**
+         * Another way of newLine(), better resolution (equivalent of adding \n to the previous component)
+         * @return the PageBuilder's calling instance
+         */
+        public PageBuilder endLine() {
+            return newLine();
+        }
 
         /**
          * Builds the page
@@ -274,34 +316,11 @@ public final class BookFormatter {
         private String text = "";
         private ClickAction onClick = null;
         private HoverAction onHover = null;
-        private ChatColor color = ChatColor.BLACK;
 
-        @Setter(AccessLevel.NONE)//We're overwriting it
-        private ChatColor[] style;
-
-        /**
-         * Sets the color of the text, or takes the previous color (if null is passed)
-         * @param color the color of the text
-         * @return the calling TextBuilder's instance
-         */
-        public TextBuilder color(ChatColor color) {
-            if(color != null && !color.isColor())
-                throw new IllegalArgumentException("Argument isn't a color!");
-            this.color = color;
-            return this;
-        }
-
-        /**
-         * Sets the style of the text
-         * @param style the style of the text
-         * @return the calling TextBuilder's instance
-         */
-        public TextBuilder style(ChatColor... style) {
-            for(ChatColor c : style)
-                if(!c.isFormat())
-                    throw new IllegalArgumentException("Argument isn't a style!");
-            this.style = style;
-            return this;
+        public TextBuilder() {}
+        
+        public TextBuilder(String text) {
+        	this.text = text;
         }
 
         /**
@@ -310,36 +329,11 @@ public final class BookFormatter {
          */
         public BaseComponent build() {
             TextComponent res = new TextComponent(text);
-            if(onClick != null)
+            if(onClick != null) {
                 res.setClickEvent(new ClickEvent(onClick.action(), onClick.value()));
-            if(onHover != null)
-                res.setHoverEvent(new HoverEvent(onHover.action(), onHover.value()));
-            if(color != null) {
-                if (canTranslateDirectly)
-                    res.setColor(color.asBungee());
-                else
-                    res.setColor(net.md_5.bungee.api.ChatColor.getByChar(color.getChar()));
             }
-            if(style != null) {
-                for(ChatColor c : style) {
-                    switch (c) {
-                        case MAGIC:
-                            res.setObfuscated(true);
-                            break;
-                        case BOLD:
-                            res.setBold(true);
-                            break;
-                        case STRIKETHROUGH:
-                            res.setStrikethrough(true);
-                            break;
-                        case UNDERLINE:
-                            res.setUnderlined(true);
-                            break;
-                        case ITALIC:
-                            res.setItalic(true);
-                            break;
-                    }
-                }
+            if(onHover != null) {
+                res.setHoverEvent(new HoverEvent(onHover.action(), onHover.value()));
             }
             return res;
         }
@@ -500,7 +494,7 @@ public final class BookFormatter {
          * @param entity the item to display
          * @return a new HoverAction instance
          */
-        static HoverAction showEntity(Entity entity) {
+		static HoverAction showEntity(Entity entity) {
             return showEntity(entity.getUniqueId(), entity.getType().getName(), entity.getName());
         }
 
@@ -518,7 +512,7 @@ public final class BookFormatter {
          * @param achievement the achievement to display
          * @return a new HoverAction instance
          */
-        static HoverAction showAchievement(Achievement achievement) {
+		static HoverAction showAchievement(Achievement achievement) {
             return showAchievement(BookAchievement.toId(achievement));
         }
 
