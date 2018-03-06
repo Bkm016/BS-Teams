@@ -1,7 +1,10 @@
 package com.github.bkm016.bsteams;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.github.bkm016.bsteams.command.BSTeamsCommand;
 
 import lombok.Getter;
 
@@ -17,13 +20,14 @@ public class BSTeamsPlugin extends JavaPlugin {
 	@Override
 	public void onLoad() {
 		inst = this;
-		// 保存配置文件
+		// 鐢熸垚閰嶇疆鏂囦欢
 		saveDefaultConfig();
 	}
 	
 	@Override
 	public void onEnable() {
-		
+		// 娉ㄥ唽鍛戒护
+		Bukkit.getPluginCommand("bsteams").setExecutor(new BSTeamsCommand());
 	}
 	
 	@Override
