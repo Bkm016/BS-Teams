@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 /**
  * The NMS helper for all the Book-API
  */
-public final class NmsBookHelper {
+public final class BookReflection {
     private static final String version;
     private static final boolean doubleHands;
 
@@ -219,10 +219,10 @@ public final class NmsBookHelper {
          * The current running version
          */
         @Getter
-        private final String version = NmsBookHelper.version;
+        private final String version = BookReflection.version;
 
         public UnsupportedVersionException(Exception e) {
-            super("Error while executing reflections, submit to developers the following log (version: " + NmsBookHelper.version + ")", e);
+            super("Error while executing reflections, submit to developers the following log (version: " + BookReflection.version + ")", e);
         }
     }
 

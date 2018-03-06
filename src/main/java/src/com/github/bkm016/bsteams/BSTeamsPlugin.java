@@ -4,12 +4,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.avaje.ebean.validation.Length;
 import com.github.bkm016.bsteams.command.BSTeamsCommand;
 import com.github.bkm016.bsteams.database.Data;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
 
 import lombok.Getter;
+import me.skymc.taboolib.string.language2.Language2;
 
 /**
  * @author sky
@@ -20,6 +22,9 @@ public class BSTeamsPlugin extends JavaPlugin {
 	@Getter
 	private static Plugin inst;
 	
+	@Getter
+	private static Language2 language;
+	
 	@Override
 	public void onLoad() {
 		inst = this;
@@ -28,9 +33,16 @@ public class BSTeamsPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		// 注册命令
-		Config.loadConfig();//加载Config
-		Message.loadMessage();//加载Message
-		Data.loadData();//加载Data
+		Bukkit.getPluginCommand("bsteams").setExecutor(new BSTeamsCommand());
+		// 载入配置
+		Config.loadConfig();
+		// 载入语言
+		Message.loadMessage();
+		// 载入数据
+		Data.loadData();
+		
+		// 载入 Language2
+		language = new Language2(this);
 	}
 	
 	@Override

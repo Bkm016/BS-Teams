@@ -20,7 +20,7 @@ import org.bukkit.inventory.meta.BookMeta;
 
 import java.util.*;
 
-public final class BookUtil {
+public final class BookFormatter {
     private static final boolean canTranslateDirectly;
 
     static {
@@ -55,7 +55,7 @@ public final class BookUtil {
         p.updateInventory();
 
         //Opening the GUI
-        NmsBookHelper.openBook(p, event.getBook(), event.getHand() == CustomBookOpenEvent.Hand.OFF_HAND);
+        BookReflection.openBook(p, event.getBook(), event.getHand() == CustomBookOpenEvent.Hand.OFF_HAND);
 
         //Returning whatever was on hand.
         p.setItemInHand(hand);
@@ -133,7 +133,7 @@ public final class BookUtil {
          * @return the BookBuilder's calling instance
          */
         public BookBuilder pages(BaseComponent[]... pages) {
-            NmsBookHelper.setPages(meta, pages);
+            BookReflection.setPages(meta, pages);
             return this;
         }
 
@@ -143,7 +143,7 @@ public final class BookUtil {
          * @return the BookBuilder's calling instance
          */
         public BookBuilder pages(List<BaseComponent[]> pages) {
-            NmsBookHelper.setPages(meta, pages.toArray(new BaseComponent[0][]));
+            BookReflection.setPages(meta, pages.toArray(new BaseComponent[0][]));
             return this;
         }
 
@@ -468,7 +468,7 @@ public final class BookUtil {
          * @return a new HoverAction instance
          */
         static HoverAction showItem(ItemStack item) {
-            return new SimpleHoverAction(HoverEvent.Action.SHOW_ITEM, NmsBookHelper.itemToComponents(item));
+            return new SimpleHoverAction(HoverEvent.Action.SHOW_ITEM, BookReflection.itemToComponents(item));
         }
 
         /**
@@ -489,7 +489,7 @@ public final class BookUtil {
          */
         static HoverAction showEntity(UUID uuid, String type, String name) {
             return new SimpleHoverAction(HoverEvent.Action.SHOW_ENTITY,
-                    NmsBookHelper.jsonToComponents(
+                    BookReflection.jsonToComponents(
                             "{id:\"" + uuid + "\",type:\"" + type + "\"name:\"" + name + "\"}"
                     )
             );
@@ -519,7 +519,7 @@ public final class BookUtil {
          * @return a new HoverAction instance
          */
         static HoverAction showAchievement(Achievement achievement) {
-            return showAchievement(AchievementUtil.toId(achievement));
+            return showAchievement(BookAchievement.toId(achievement));
         }
 
         /**
