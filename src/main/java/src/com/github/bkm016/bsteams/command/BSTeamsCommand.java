@@ -19,35 +19,34 @@ import com.github.bkm016.bsteams.util.PlayerCommand;
  * @since 2018-03-06 20:33:23
  */
 public class BSTeamsCommand implements CommandExecutor {
-
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String label, String[] args) {
-        if(label.equalsIgnoreCase("bst") || label.equalsIgnoreCase(BSTeamsPlugin.getInst().getName())){
+        if(label.equalsIgnoreCase("bst") || label.equalsIgnoreCase("teams") || label.equalsIgnoreCase("bsteams")){
                 //判断是否是玩家
                 if((sender instanceof Player)){
                     //判断是否有权限
-                    if(!sender.hasPermission(BSTeamsPlugin.getInst().getName()+ ".use")){
-        				sender.sendMessage(Message.getMsg(Message.ADMIN_NO_PER_CMD));
+                    if(!sender.hasPermission("bsteams"+ ".use")){
+        				BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_PER_CMD).send(sender);
                         return true;
                     }
                 }
                 //无参数
                 if(args.length==0){
-                	sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&6==========[&b "+ BSTeamsPlugin.getInst().getName() +"&6 ]=========="));
+                	sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&6==========[&b "+ "bsteams" +"&6 ]=========="));
                         for(java.lang.reflect.Method method : this.getClass().getDeclaredMethods()){
                                 if(!method.isAnnotationPresent(PlayerCommand.class)){
                                         continue;
                                 }
                                 PlayerCommand sub=method.getAnnotation(PlayerCommand.class);
-                                if(sender.hasPermission(BSTeamsPlugin.getInst().getName()+"." + sub.cmd())){
-                                	sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/"+ label + " " +sub.cmd()+"&6"+sub.arg()+"&7-:&3 "+Message.getMsg("Command."+ sub.cmd())));
+                                if(sender.hasPermission("bsteams"+"." + sub.cmd())){
+                                	sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/"+ label + " " +sub.cmd()+"&6"+sub.arg()+"&7-:&3 "+BSTeamsPlugin.getLanguage().get("Command."+sub.cmd())));
                                 }
                         }
                         return true;
                 }
         		if(sender instanceof Player){
-        			if(!sender.hasPermission(BSTeamsPlugin.getInst().getName()+ "." + args[0])) {
-        				sender.sendMessage(Message.getMsg(Message.ADMIN_NO_PER_CMD));
+        			if(!sender.hasPermission("bsteams." + args[0])) {
+        				BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_PER_CMD).send(sender);
         	            return true;
         			}
         		}
@@ -70,7 +69,7 @@ public class BSTeamsCommand implements CommandExecutor {
                         }
                         return true;
                 }
-                sender.sendMessage(Message.getMsg(Message.ADMIN_NO_CMD, args[0]));
+                BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_CMD).addPlaceholder("$SubCmd", args[0]).send(sender);
             return true;
         }
         return false;
@@ -79,8 +78,8 @@ public class BSTeamsCommand implements CommandExecutor {
 	public void onReloadCommand(CommandSender sender,String args[]){
         Config.loadConfig();
         Data.loadData();
-		Message.loadMessage();
-		sender.sendMessage(Message.getMsg(Message.PLUGIN_RELOAD));
+        BSTeamsPlugin.getLanguage().reload();
+		BSTeamsPlugin.getLanguage().get(Message.PLUGIN_RELOAD).send(sender);
 	}
 
 }

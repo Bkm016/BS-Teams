@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 public class Data {
 	public static YamlConfiguration data;
 	static File dataFile = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Data.dat");
-
+	static public ArrayList<TeamData> teamList = new ArrayList<TeamData>();
 	
 	static public void loadData(){
 		//检测data.dat是否存在

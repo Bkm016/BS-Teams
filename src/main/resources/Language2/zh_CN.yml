@@ -1,1 +1,10 @@
 # 语言文件
+Admin:
+  NoPermissionCommand: '&8[&d队伍&8] &c你没有权限执行此指令'
+  NoCommand: '&8[&d队伍&8] &c未找到此子指令: $SubCmd'
+  NoFormat: '&8[&d队伍&8] &c格式错误!'
+  NoOnline: '&8[&d队伍&8] &c玩家不在线或玩家不存在!'
+  NoConsole: '&8[&d队伍&8] &c控制台不允许执行此指令!'
+  PluginReload: '&8[&d队伍&8] §c插件已重载'
+Command:
+  reload: 重新加载这个插件的配置
