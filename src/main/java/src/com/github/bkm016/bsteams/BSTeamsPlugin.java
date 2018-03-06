@@ -37,8 +37,6 @@ public class BSTeamsPlugin extends JavaPlugin {
 		Bukkit.getPluginCommand("bsteams").setExecutor(new BSTeamsCommand());
 		// 载入配置
 		Config.loadConfig();
-		// 载入语言
-		Message.loadMessage();
 		// 载入数据
 		Data.loadData();
 		

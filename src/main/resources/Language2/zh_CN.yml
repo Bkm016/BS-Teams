@@ -6,5 +6,9 @@ Admin:
   NoOnline: '&8[&d队伍&8] &c玩家不在线或玩家不存在!'
   NoConsole: '&8[&d队伍&8] &c控制台不允许执行此指令!'
   PluginReload: '&8[&d队伍&8] §c插件已重载'
+  
+# 命令
 Command:
-  reload: 重新加载这个插件的配置
+  title: '&6&l----- &e&lBS-Teams &6&l-----'
+  label: '&f/$command &6- &e$desc'
+  reload: '&7重新加载这个插件的配置'

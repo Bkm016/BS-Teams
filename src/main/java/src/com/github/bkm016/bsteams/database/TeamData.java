@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.bukkit.inventory.ItemStack;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /*本类由 Saukiya 在 2018年3月6日 下午10:42:23 时创建
  *TIM:admin@Saukiya.cn
