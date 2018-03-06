@@ -1,4 +1,4 @@
-package com.github.bkm016.bsteams.config;
+package com.github.bkm016.bsteams.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class Config {
 	static public void createConfig(){
         Bukkit.getConsoleSender().sendMessage("[BS-Teams] §cCreate Config.yml");
 		config = new YamlConfiguration();
-		config.set(COMMAND_RELOAD, Integer.valueOf(80));
+		config.set(COMMAND_RELOAD, 80);
 		try {config.save(configFile);} catch (IOException e) {e.printStackTrace();}
 	}
 	
