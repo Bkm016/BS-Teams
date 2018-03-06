@@ -1,0 +1,10 @@
+name: BS-Teams
+main: com.github.bkm016.bsteams.BSTeamsPlugin
+version: {$VERSION}
+
+authors: [Bkm016, Saukiya]
+
+commands:
+  bsteams:
+    aliases: [teams]
+    permission: bsteams.use
