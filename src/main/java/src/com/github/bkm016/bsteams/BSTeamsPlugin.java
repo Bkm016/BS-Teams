@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.avaje.ebean.validation.Length;
 import com.github.bkm016.bsteams.command.BSTeamsCommand;
 import com.github.bkm016.bsteams.database.Data;
+import com.github.bkm016.bsteams.event.PlayerPickupItem;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
 import com.github.bkm016.spigot.book.aa;
@@ -45,6 +46,7 @@ public class BSTeamsPlugin extends JavaPlugin {
 		
 		// 监听器
 		Bukkit.getPluginManager().registerEvents(new aa(), this);
+		Bukkit.getPluginManager().registerEvents(new PlayerPickupItem(), this);
 	}
 	
 	@Override

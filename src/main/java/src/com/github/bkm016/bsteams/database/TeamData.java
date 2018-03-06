@@ -1,63 +1,120 @@
 package com.github.bkm016.bsteams.database;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import com.github.bkm016.bsteams.BSTeamsPlugin;
+import com.github.bkm016.bsteams.util.Config;
 
 import lombok.Getter;
-import lombok.Setter;
 
-/*本类由 Saukiya 在 2018年3月6日 下午10:42:23 时创建
- *TIM:admin@Saukiya.cn
- *GitHub:https://github.com/Saukiya
-**/
+/**
+ * @author Saukiya
+ * @since 2018年3月6日
+ */
 
 public class TeamData {
-	@Getter
+	@Getter//队长
 	private String teamLeader;
-	@Getter 
-	private ArrayList<String> teamMembers = new ArrayList<String>();
-	@Getter
-	private ArrayList<ItemStack> teamItems = new ArrayList<ItemStack>();
+	@Getter //队员
+	private List<String> teamMembers = new ArrayList<String>();
+	@Getter//队伍物品
+	private List<ItemStack> teamItems = new ArrayList<ItemStack>();
+	@Getter//队长在的时候更新时间
+	private long teamTimes;
+	@Getter//队长在的时候更新时间
+	private Boolean pickup = true;
 	
-	public TeamData(String teamLeader,ArrayList<String> teamMembers,ArrayList<ItemStack> teamItems){
+	public TeamData(String teamLeader,List<String> teamMembers,List<ItemStack> teamItems,Long times){
 		this.teamLeader = teamLeader;
-		if(teamMembers != null)this.teamMembers = teamMembers;
-		if(teamItems != null)this.teamItems = teamItems;
+		if (teamMembers != null)this.teamMembers = teamMembers;
+		if (teamItems != null)this.teamItems = teamItems;
+		if (times != null){
+			this.teamTimes = times;
+		}
+		else {
+			this.teamTimes = System.currentTimeMillis();
+		}
 	}
 	
 	//更换队长
-	public void setTeamLeader(String teamLeader){
+	public TeamData setTeamLeader(String teamLeader){
 		this.teamLeader = teamLeader;
+		return this;
 	}
 	
 	//增加队员
-	public void addTeamMember(String teamMember){
-		if(!this.teamMembers.contains(teamMember)){
+	public TeamData addTeamMember(String teamMember){
+		if (!this.teamMembers.contains(teamMember)){
 			this.teamMembers.add(teamMember);
 		}
+		return this;
 	}
 	
 	//减少队员
-	public void removeTeamMember(String teamMember){
-		if(this.teamMembers.contains(teamMember)){
+	public TeamData removeTeamMember(String teamMember){
+		if (this.teamMembers.contains(teamMember)){
 			this.teamMembers.remove(teamMember);
 		}
+		return this;
 	}
 	
 	//清除队员 可能用不到
-	public void clearTeamMember(){
+	public TeamData clearTeamMember(){
 		this.teamMembers.clear();
+		return this;
 	}
 	
 	//增加物品到列表
-	public void addTeamItems(ItemStack item){
+	public TeamData addTeamItems(ItemStack item){
 		this.teamItems.add(item);
+		return this;
 	}
 	
 	//设置物品列表
-	public void setTeamItems(ArrayList<ItemStack> teamItems){
+	public TeamData setTeamItems(List<ItemStack> teamItems){
 		this.teamItems = teamItems;
+		return this;
 	}
-
+	
+	//更新队伍保留时间
+	public TeamData updateTeamTime(){
+		this.teamTimes = System.currentTimeMillis();
+		return this;
+	}
+	
+	//快捷保存
+	public TeamData save(){
+		if (Config.getConfig(Config.ASYNCHRONOUSLY_SAVE).equalsIgnoreCase("true")){
+			TeamData teamData = this;
+			new BukkitRunnable(){
+				@Override
+				public void run() {
+					Data.saveTeam(teamData);
+				}
+				
+			}.runTaskAsynchronously(BSTeamsPlugin.getInst());
+		}else{
+			Data.saveTeam(this);
+		}
+		return this;
+	}
+	//快捷删除 
+	public void remove(){
+		if (Config.getConfig(Config.ASYNCHRONOUSLY_SAVE).equalsIgnoreCase("true")){
+			TeamData teamData = this;
+			new BukkitRunnable(){
+				@Override
+				public void run() {
+					Data.removeTeam(teamData);
+				}
+				
+			}.runTaskAsynchronously(BSTeamsPlugin.getInst());
+		}else{
+			Data.removeTeam(this);
+		}
+	}
 }

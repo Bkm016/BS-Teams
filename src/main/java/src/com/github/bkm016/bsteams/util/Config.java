@@ -12,13 +12,15 @@ public class Config {
 	private static YamlConfiguration config;
 	final static File configFile = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Config.yml");
 
-	
-	final public static String COMMAND_RELOAD = "ceshi";
+
+	final public static String ASYNCHRONOUSLY_SAVE = "AsynchronouslySave";
+	final public static String TEAM_RETENTION_TIME = "TeamRetentionTime";
 	
 	static public void createConfig(){
         Bukkit.getConsoleSender().sendMessage("[BS-Teams] §cCreate Config.yml");
 		config = new YamlConfiguration();
-		config.set(COMMAND_RELOAD, 80);
+		config.set(ASYNCHRONOUSLY_SAVE, true);
+		config.set(TEAM_RETENTION_TIME, "1d");
 		try {config.save(configFile);} catch (IOException e) {e.printStackTrace();}
 	}
 	

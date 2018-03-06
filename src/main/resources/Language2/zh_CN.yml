@@ -6,9 +6,26 @@ Admin:
   NoOnline: '&8[&d队伍&8] &c玩家不在线或玩家不存在!'
   NoConsole: '&8[&d队伍&8] &c控制台不允许执行此指令!'
   PluginReload: '&8[&d队伍&8] §c插件已重载'
-  
+
 # 命令
 Command:
   title: '&6&l----- &e&lBS-Teams &6&l-----'
   label: '&f/$command &6- &e$desc'
+  create: '&7创建一个队伍'
+  remove: '&7解散一个队伍'
+  join: '&7加入一个队伍'
+  quit: '&7退出一个队伍'
+  open: '&7打开测试队伍背包'
+  list: '&7测试-查看队伍列表'
   reload: '&7重新加载这个插件的配置'
+
+#玩家消息
+Player:
+  CreateTeam: '&8[&d队伍&8] &3你成功创建了一个队伍!'
+  QuitTeam: '&8[&d队伍&8] &c你退出了 &6$Team &c的队伍!'
+  RemoveTeam: '&8[&d队伍&8] &c你解散了队伍!'
+  HasTeam: '&8[&d队伍&8] &c你已经存在一个队伍里了!'
+  NoHasTeam: '&8[&d队伍&8] &c你没有队伍!'
+  NoTeam: '&8[&d队伍&8] &c队伍不存在!'
+  NoTeamLeader: '&8[&d队伍&8] &c你不是队长!'
+  NoTeamMember: '&8[&d队伍&8] &c你不是队员!'
