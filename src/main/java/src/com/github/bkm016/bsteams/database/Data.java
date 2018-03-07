@@ -110,6 +110,11 @@ public class Data {
 			data.set(teamLeader+".Time", teamTimes);
 			data.set(teamLeader+".Members", teamMembers);
 			data.set(teamLeader+".Items", teamItems);
+			
+			List<String> notes = new ArrayList<>();
+			for (NoteData note : teamData.getItemNotes()) {
+				
+			}
 		}
 		try {
 			data.save(DATA_FILE);

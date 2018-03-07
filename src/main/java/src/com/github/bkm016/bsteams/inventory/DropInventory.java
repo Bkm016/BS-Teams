@@ -12,8 +12,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.database.Data;
 import com.github.bkm016.bsteams.database.TeamData;
-
+import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
+
+import me.skymc.taboolib.inventory.InventoryUtil;
+import me.skymc.taboolib.inventory.ItemUtils;
 
 /**
  * @author Saukiya
@@ -21,6 +24,35 @@ import com.github.bkm016.bsteams.util.Message;
  */
 
 public class DropInventory {
+	
+	/**
+	 * 打开掉落物背包
+	 * 
+	 * @param player 玩家
+	 * @param page 页数
+	 * @param teamData 队伍信息
+	 */
+	public static void openInventory(Player player, int page, TeamData teamData) {
+		// 创建背包
+		Inventory inventory = Bukkit.createInventory(new DropInventoryHolder(teamData, page), 54, BSTeamsPlugin.getLanguage().get(Message.INVENTORY_DROP_NAME).asString());
+		// 最大页数
+		int maxPage = teamData.getTeamItems().size() / 28 + 1;
+		// 放置物品
+		for (int i = 0, j = page * 28 - 28 ; i < 28 && j < teamData.getTeamItems().size() ; i++ , j++){
+			inventory.setItem(InventoryUtil.SLOT_OF_CENTENTS.get(i), teamData.getTeamItems().get(j));
+		}
+		// 下一页
+		if (page < maxPage) {
+			inventory.setItem(51, ItemUtils.loadItem(Config.getConfig(), Config.PAGE_ARROW_NEXT));
+		}
+		// 上一页
+		if (page > 1) {
+			inventory.setItem(47, ItemUtils.loadItem(Config.getConfig(), Config.PAGE_ARROW_BACK));
+		}
+		// 打开界面
+		player.openInventory(inventory);
+	}
+	
 	public static void openDropInventory(Player player,int page,TeamData... teamDatas){
 		TeamData teamData = null;
 		if (teamDatas.length > 0){
@@ -58,7 +90,7 @@ public class DropInventory {
 			inv.setItem(45, item);
 		}
 		item.setAmount(1);
-		for (int i=0,j=page*36-36;i < 36 && j < teamItems.size();i++,j++){
+		for (int i=0,j=page*28-28;i < 28 && j < teamItems.size();i++,j++){
 			inv.setItem(i+9, teamItems.get(j));
 		}
 		player.openInventory(inv);

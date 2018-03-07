@@ -3,34 +3,55 @@ package com.github.bkm016.bsteams.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-public class Config {
-	private static YamlConfiguration config;
-	final static File configFile = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Config.yml");
+import lombok.Getter;
 
+public class Config {
+	
+	@Getter
+	private static YamlConfiguration config;
+	private static File configFile = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Config.yml");
 
 	public static final String ASYNCHRONOUSLY_SAVE = "AsynchronouslySave";
 	public static final String TEAM_RETENTION_TIME = "TeamRetentionTime";
+	
+	public static final String PAGE_ARROW_NEXT = "Settings.page_next_arrow";
+	public static final String PAGE_ARROW_BACK = "Settings.page_back_arrow";
+	public static final String PAGE_ARROW_NOTE = "Settings.page_note_arrow";
+	public static final String NOTE_SIZE = "Settings.note-size";
 	
 	static public void createConfig(){
         Bukkit.getConsoleSender().sendMessage("[BS-Teams] §cCreate Config.yml");
 		config = new YamlConfiguration();
 		config.set(ASYNCHRONOUSLY_SAVE, true);
 		config.set(TEAM_RETENTION_TIME, "1d");
-		try {config.save(configFile);} catch (IOException e) {e.printStackTrace();}
+		config.set(PAGE_ARROW_NEXT + ".material", "ARROW");
+		config.set(PAGE_ARROW_NEXT + ".name", "&f下一页");
+		config.set(PAGE_ARROW_NEXT + ".lore", Arrays.asList("", "&7点击翻页"));
+		config.set(PAGE_ARROW_BACK + ".material", "ARROW");
+		config.set(PAGE_ARROW_BACK + ".name", "&f上一页");
+		config.set(PAGE_ARROW_BACK + ".lore", Arrays.asList("", "&7点击翻页"));
+		config.set(PAGE_ARROW_NOTE + ".material", "BOOK_AND_QUILL");
+		config.set(NOTE_SIZE, 10);
+		try {
+			config.save(configFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	static public void loadConfig(){
 		//检测Config.yml是否存在
-		if(!configFile.exists()){
+		if (!configFile.exists()) {
 			//创建Config.yml
 			createConfig();
 			return;
-		}else{
+		} else {
 	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §aFind Config.yml");
 		}
 		config = new YamlConfiguration();
@@ -62,6 +83,10 @@ public class Config {
 	
 	public static void setConfig(String loc , Object arg){
 		config.set(loc, arg);
-		try {config.save(configFile);} catch (IOException e) {e.printStackTrace();}
+		try {
+			config.save(configFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

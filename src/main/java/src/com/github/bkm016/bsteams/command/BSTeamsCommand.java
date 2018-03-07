@@ -53,21 +53,21 @@ public class BSTeamsCommand implements CommandExecutor {
         
     	// 默认黑名单
     	List<String> blacklist = BLACKLIST_CONSOLE;
+    	if (sender instanceof Player){
+			TeamData teamData = Data.getTeam(sender.getName());
+			if (teamData != null){
+				if (teamData.getTeamLeader().equals(sender.getName())){
+					blacklist = BLACKLIST_LEADER;
+				} else {
+					blacklist = BLACKLIST_MEMBER;
+				}
+			} else {
+				blacklist = BLACKLIST_NOTEAM;
+			}
+		}
+    	
         // 如果没有参数
         if (args.length == 0) {
-			if (sender instanceof Player){
-				TeamData teamData = Data.getTeam(sender.getName());
-				if (teamData != null){
-					if (teamData.getTeamLeader().equals(sender.getName())){
-						blacklist = BLACKLIST_LEADER;
-					} else {
-						blacklist = BLACKLIST_MEMBER;
-					}
-    			} else {
-    				blacklist = BLACKLIST_NOTEAM;
-    			}
-			}
-			
 			// 帮助
         	BSTeamsPlugin.getLanguage().get("Command.title").send(sender);
         	for (java.lang.reflect.Method method : this.getClass().getDeclaredMethods()) {
@@ -227,7 +227,7 @@ public class BSTeamsCommand implements CommandExecutor {
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_HAS_TEAM).send(sender);
 			return;
 		}
-		DropInventory.openDropInventory(player, 1, teamData);
+		DropInventory.openInventory(player, 1, teamData);
 	}
 	
 	

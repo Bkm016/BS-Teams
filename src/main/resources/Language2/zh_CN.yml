@@ -26,6 +26,9 @@ Inventory:
     Name: '掉落物分配背包'
     PageDown: '&r下一页'
     PageUp: '&r上一页'
+    Full: '&8[&3队伍&8] &4你的背包已满, 无法获取该物品'
+    Note: '&f$id. &7$player &8-> &7$item &8(&f$date&8)'
+    Note-empty: '&7暂无'
 
 #玩家消息
 Player:

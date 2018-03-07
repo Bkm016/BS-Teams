@@ -1,5 +1,7 @@
 package com.github.bkm016.bsteams.event;
 
+import java.util.HashMap;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,7 +15,12 @@ import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.database.Data;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.inventory.DropInventory;
+import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
 import com.github.bkm016.bsteams.util.Message;
+
+import me.skymc.taboolib.inventory.InventoryUtil;
+import me.skymc.taboolib.inventory.ItemUtils;
+import me.skymc.taboolib.itemnbtapi.NBTItem;
 
 /**
  * @author Saukiya
@@ -21,8 +28,52 @@ import com.github.bkm016.bsteams.util.Message;
  */
 
 public class InventoryClick implements Listener {
-
+	
 	@EventHandler
+	public void onClick(InventoryClickEvent e) {
+		if (e.getInventory().getHolder() instanceof DropInventoryHolder) {
+			e.setCancelled(true);
+			// 获取玩家
+			Player player = (Player) e.getWhoClicked();
+			// 获取背包
+			DropInventoryHolder holder = (DropInventoryHolder) e.getInventory().getHolder();
+			// 判断点击位置
+			if (e.getRawSlot() < 0 || e.getRawSlot() >= e.getInventory().getSize() || ItemUtils.isNull(e.getCurrentItem())) {
+				return;
+			}
+			// 下一页
+			if (e.getRawSlot() == 51) {
+				DropInventory.openInventory(player, holder.getPage() + 1, holder.getTeamData());
+			}
+			// 上一页
+			else if (e.getRawSlot() == 47) {
+				DropInventory.openInventory(player, holder.getPage() - 1, holder.getTeamData());
+			}
+			// 物品
+			else {
+				// 获取物品数据
+				NBTItem nbt = new NBTItem(e.getCurrentItem());
+				if (nbt.hasKey("not_drop_item")) {
+					return;
+				}
+				// 背包已满
+				if (InventoryUtil.isEmpty(player, 0)) {
+					// 提示信息
+					BSTeamsPlugin.getLanguage().get("Inventory.Drop.Full").send(player);
+				}
+				else {
+					// 给予物品
+					player.getInventory().addItem(e.getCurrentItem());
+					// 删除物品
+					holder.getTeamData().removeTeamItems(e.getCurrentItem());
+					// 刷新界面
+					holder.getTeamData().updateInventory();
+				}
+			}
+		}
+	}
+
+//	@EventHandler
 	public void onPlayerPickupItemEvent(InventoryClickEvent e) {
 		Inventory inv = e.getInventory();
 		Player player = (Player) e.getView().getPlayer();
