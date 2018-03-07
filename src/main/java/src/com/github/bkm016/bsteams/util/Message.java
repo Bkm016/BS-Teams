@@ -12,6 +12,7 @@ public class Message {
 
 	public static final String PLAYER_CREATE_TEAM = "Player.CreateTeam";
 	public static final String PLAYER_QUIT_TEAM = "Player.QuitTeam";
+	public static final String PLAYER_JOIN_TEAM = "Player.JoinTeam";
 	public static final String PLAYER_NO_TEAM = "Player.NoTeam";
 	public static final String PLAYER_REMOVE_TEAM = "Player.RemoveTeam";
 	public static final String PLAYER_HAS_TEAM = "Player.HasTeam";

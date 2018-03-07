@@ -12,13 +12,14 @@ Command:
   title: '&6&l----- &e&lBS-Teams &6&l-----'
   label: '&f/$command &6- &e$desc'
   create: '&7创建一个队伍'
-  remove: '&7解散一个队伍'
+  dissolve: '&7解散一个队伍'
   join: '&7加入一个队伍'
   quit: '&7退出一个队伍'
   open: '&7打开测试队伍背包'
   list: '&7测试-查看队伍列表'
   reload: '&7重新加载这个插件的配置'
   blacklist: '&8[&3队伍&8] &4不允许这么做'
+  clearnote: '&8[&3队伍&8] &4操作日志已清空'
   
 #背包
 Inventory:
@@ -28,12 +29,13 @@ Inventory:
     PageUp: '&r上一页'
     Full: '&8[&3队伍&8] &4你的背包已满, 无法获取该物品'
     Note: '&f$id. &7$player &8-> &7$item &8(&f$date&8)'
-    Note-empty: '&7暂无'
+    Note-Empty: '&7暂无'
 
 #玩家消息
 Player:
   CreateTeam: '&8[&3队伍&8] &2你成功创建了一个队伍!'
   QuitTeam: '&8[&3队伍&8] &c你退出了 &6$Team &c的队伍!'
+  JoinTeam: '&8[&3队伍&8] &7你加入了 &f$Team &7的队伍!'
   RemoveTeam: '&8[&3队伍&8] &c你解散了队伍!'
   HasTeam: '&8[&3队伍&8] &c你已经存在一个队伍里了!'
   NoHasTeam: '&8[&3队伍&8] &c你没有队伍!'

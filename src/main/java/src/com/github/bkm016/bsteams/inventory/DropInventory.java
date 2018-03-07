@@ -1,5 +1,8 @@
 package com.github.bkm016.bsteams.inventory;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -11,6 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.database.Data;
+import com.github.bkm016.bsteams.database.NoteData;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
@@ -48,6 +52,33 @@ public class DropInventory {
 		// 上一页
 		if (page > 1) {
 			inventory.setItem(47, ItemUtils.loadItem(Config.getConfig(), Config.PAGE_ARROW_BACK));
+		}
+		// 日志
+		ItemStack noteItem = ItemUtils.loadItem(Config.getConfig(), Config.NOTE_ITEM); {
+			ItemMeta meta = noteItem.getItemMeta();
+			// 获取日志
+			if (teamData.getItemNotes().size() == 0) {
+				meta.setLore(Arrays.asList("", BSTeamsPlugin.getLanguage().get("Inventory.Drop.Note-Empty").asString()));
+			}
+			else {
+				SimpleDateFormat format = new SimpleDateFormat(Config.getConfig(Config.DATE_FORMAT));
+				List<String> notes = new ArrayList<>();
+				notes.add("");
+				// 遍历日志
+				int i = 1;
+				for (NoteData noteData : teamData.getItemNotes()) {
+					notes.add(BSTeamsPlugin.getLanguage().get("Inventory.Drop.Note")
+							.addPlaceholder("$id", String.valueOf(i))
+							.addPlaceholder("$player", noteData.getPlayer())
+							.addPlaceholder("$item", noteData.getItemName())
+							.addPlaceholder("$date", format.format(noteData.getDate()))
+							.asString());
+					i++;
+				}
+				meta.setLore(notes);
+			}
+			noteItem.setItemMeta(meta);
+			inventory.setItem(49, noteItem);
 		}
 		// 打开界面
 		player.openInventory(inventory);

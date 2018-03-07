@@ -142,7 +142,7 @@ public class TeamData {
 	 * @return {@link TeamData}
 	 */
 	public TeamData addItemNote(Player player, ItemStack item) {
-		itemNotes.add(0, new NoteData(player.getName(), ItemUtils.getCustomName(item), System.currentTimeMillis()));
+		itemNotes.add(0, new NoteData(player.getName(), ItemUtils.getCustomName(item) + "§f * " + item.getAmount(), System.currentTimeMillis()));
 		// 判断数量
 		while (itemNotes.size() > Config.getConfig().getInt(Config.NOTE_SIZE)) {
 			itemNotes.remove(itemNotes.size() - 1);

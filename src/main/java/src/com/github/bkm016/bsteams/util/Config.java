@@ -22,8 +22,9 @@ public class Config {
 	
 	public static final String PAGE_ARROW_NEXT = "Settings.page_next_arrow";
 	public static final String PAGE_ARROW_BACK = "Settings.page_back_arrow";
-	public static final String PAGE_ARROW_NOTE = "Settings.page_note_arrow";
+	public static final String NOTE_ITEM = "Settings.note-item";
 	public static final String NOTE_SIZE = "Settings.note-size";
+	public static final String DATE_FORMAT = "Settings.date-format";
 	
 	static public void createConfig(){
         Bukkit.getConsoleSender().sendMessage("[BS-Teams] §cCreate Config.yml");
@@ -36,8 +37,10 @@ public class Config {
 		config.set(PAGE_ARROW_BACK + ".material", "ARROW");
 		config.set(PAGE_ARROW_BACK + ".name", "&f上一页");
 		config.set(PAGE_ARROW_BACK + ".lore", Arrays.asList("", "&7点击翻页"));
-		config.set(PAGE_ARROW_NOTE + ".material", "BOOK_AND_QUILL");
+		config.set(NOTE_ITEM + ".material", "BOOK_AND_QUILL");
+		config.set(NOTE_ITEM + ".name", "&f操作日志");
 		config.set(NOTE_SIZE, 10);
+		config.set(DATE_FORMAT, "yyyy-MM-dd HH:mm:ss");
 		try {
 			config.save(configFile);
 		} catch (IOException e) {
