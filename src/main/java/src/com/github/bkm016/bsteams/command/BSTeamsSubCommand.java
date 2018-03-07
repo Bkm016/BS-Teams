@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
+import com.github.bkm016.bsteams.book.BookHandler;
 import com.github.bkm016.bsteams.command.enums.CommandType;
 import com.github.bkm016.bsteams.database.Data;
 import com.github.bkm016.bsteams.database.TeamData;
@@ -153,5 +154,28 @@ public class BSTeamsSubCommand {
         Config.loadConfig();
         BSTeamsPlugin.getLanguage().reload();
 		BSTeamsPlugin.getLanguage().get(Message.PLUGIN_RELOAD).send(sender);
+	}
+	
+	@PlayerCommand(cmd = "info", type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
+	void onInfoCommand(CommandSender sender, String args[]) {
+		Player player = (Player) sender;
+		TeamData teamData = null;
+		if (args.length == 1) {
+			teamData = Data.getTeam(player.getName());
+		}
+		else {
+			// 判断权限
+			if (sender.hasPermission("bsteams.admin")) {
+				teamData = Data.getTeam(args[1]);
+				// 判断队伍名是否为空或者是不是队长
+				if (teamData == null) {
+					BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
+					return;
+				}
+			}
+			return;
+		}
+		// 打开界面
+		BookHandler.getInst().openInfo(player, teamData);
 	}
 }

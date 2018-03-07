@@ -10,6 +10,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import lombok.Getter;
+import me.skymc.taboolib.playerdata.DataUtils;
 
 public class Config {
 	
@@ -25,9 +26,11 @@ public class Config {
 	public static final String NOTE_ITEM = "Settings.note-item";
 	public static final String NOTE_SIZE = "Settings.note-size";
 	public static final String DATE_FORMAT = "Settings.date-format";
+	public static final String TEAM_SIZE = "Settings.team-size";
 	
 	static public void createConfig(){
         Bukkit.getConsoleSender().sendMessage("[BS-Teams] §cCreate Config.yml");
+        // 默认配置
 		config = new YamlConfiguration();
 		config.set(ASYNCHRONOUSLY_SAVE, true);
 		config.set(TEAM_RETENTION_TIME, "1d");
@@ -41,11 +44,9 @@ public class Config {
 		config.set(NOTE_ITEM + ".name", "&f操作日志");
 		config.set(NOTE_SIZE, 10);
 		config.set(DATE_FORMAT, "yyyy-MM-dd HH:mm:ss");
-		try {
-			config.save(configFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		config.set(TEAM_SIZE, 5);
+		// 保存文件
+		DataUtils.saveConfiguration(config, configFile);
 	}
 	
 	static public void loadConfig(){

@@ -1,6 +1,7 @@
 package com.github.bkm016.bsteams;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -9,6 +10,7 @@ import com.github.bkm016.bsteams.command.BSTeamsCommand;
 import com.github.bkm016.bsteams.database.Data;
 import com.github.bkm016.bsteams.event.InventoryClick;
 import com.github.bkm016.bsteams.event.PlayerPickupItem;
+import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
 import com.github.bkm016.spigot.book.aa;
@@ -54,5 +56,11 @@ public class BSTeamsPlugin extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		Data.saveTeamList();
+		// 循环玩家
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			if (player.getOpenInventory().getTopInventory().getHolder() instanceof DropInventoryHolder) {
+				player.closeInventory();
+			}
+		}
 	}
 }
