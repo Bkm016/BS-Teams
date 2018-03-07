@@ -13,8 +13,8 @@ public class Config {
 	final static File configFile = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Config.yml");
 
 
-	final public static String ASYNCHRONOUSLY_SAVE = "AsynchronouslySave";
-	final public static String TEAM_RETENTION_TIME = "TeamRetentionTime";
+	public static final String ASYNCHRONOUSLY_SAVE = "AsynchronouslySave";
+	public static final String TEAM_RETENTION_TIME = "TeamRetentionTime";
 	
 	static public void createConfig(){
         Bukkit.getConsoleSender().sendMessage("[BS-Teams] §cCreate Config.yml");

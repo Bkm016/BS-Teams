@@ -12,7 +12,9 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.util.Config;
 
 import lombok.Getter;
@@ -20,22 +22,23 @@ import me.skymc.taboolib.other.DateUtils;
 
 public class Data {
 	public static YamlConfiguration data;
-	static File dataFile = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Data.dat");
+	static final File DATA_FILE = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Data.dat");
 	@Getter //列表储存队伍
-	static public ArrayList<TeamData> teamList = new ArrayList<TeamData>();
+	public static ArrayList<TeamData> teamList = new ArrayList<TeamData>();
+	private static BukkitRunnable runnable = null;
 	//加载Data
 	@SuppressWarnings("unchecked")
-	static public void loadData(){
+	public static void loadData(){
 		teamList.clear();
 		//检测data.dat是否存在
 		data = new YamlConfiguration();
-		if (!dataFile.exists()){
+		if (!DATA_FILE.exists()){
 	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §cCreate Data.dat");
 		}
 		else {
 	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §aFind Data.dat");
 			try {
-				data.load(dataFile);
+				data.load(DATA_FILE);
 			} 
 			catch (IOException | InvalidConfigurationException e) {
 				e.printStackTrace();
@@ -54,44 +57,26 @@ public class Data {
 			teamList.add(new TeamData(teamLeader, teamMembers, teamItems, teamTimes));
 		}
 		try {
-			data.save(dataFile);
+			data.save(DATA_FILE);
 		} 
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		new BukkitRunnable(){
+			@Override
+			public void run() {
+				saveTeamList();
+			}
+		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 600, 600);//测试 - 每分钟
 	}
-	//以下teamName就是队长名，也就是teamLeader
-	//将Player添加到Team里 --示范测试代码
-	static public void addTeamMember(Player player,String teamName){
-		if (Data.isTeam(teamName)){
-			Data.getTeam(teamName).addTeamMember(player.getName()).save();
-		}
-	}
-	//将物品丢到Team物品列表 --示范测试代码
-	static public void addItemToTeam(Player player,ItemStack item){
-		if (Data.isTeam(player.getName())){
-			Data.getTeam(player.getName()).addTeamItems(item).save();
-		}
-	}
-
 	
 	//创建队伍
-	static public void createTeam(Player player){
-		teamList.add(new TeamData(player.getName(), null, null, null).save());
-	}
-	
-	//获取玩家所在队伍的物品列表 --示范测试代码
-	static public List<ItemStack> getItemList(Player player){
-		List<ItemStack> list = new ArrayList<ItemStack>();
-		if (Data.isTeam(player.getName())){
-			return Data.getTeam(player.getName()).getTeamItems();
-		}
-		return list;
+	public static void createTeam(Player player){
+		teamList.add(new TeamData(player.getName(), null, null, null));
 	}
 	
 	//获取玩家所在的Team
-	static public TeamData getTeam(String playerName){
+	public static TeamData getTeam(String playerName){
 		for (TeamData teamData : teamList){
 			if (teamData.getTeamLeader().equals(playerName) || teamData.getTeamMembers().contains(playerName)){
 				return teamData;
@@ -100,47 +85,23 @@ public class Data {
 		return null;
 	}
 	
-	//玩家是否在队伍内
-	static public Boolean isTeam(String playerName){
-		return getTeam(playerName) != null;
-	}
-	
 	//玩家是否为队长
-	static public Boolean isTeamLeader(String playerName){
+	public static Boolean isTeamLeader(String playerName){
 		return getTeam(playerName) != null && getTeam(playerName).getTeamLeader().equals(playerName);
 	}
 	
 	//删除队伍
-	static public void removeTeam(TeamData teamData){
-		data.set(teamData.getTeamLeader(), null);
-		teamList.remove(teamData);
-		try {
-			data.save(dataFile);
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
+	public static void removeTeam(TeamData teamData){
+		if (teamList.contains(teamData)){
+			teamList.remove(teamData);
 		}
 	}
 	
-	//保存TeamData 根据情况视为定时保存/直接保存
-	static public void saveTeam(TeamData teamData){
-		String teamLeader = teamData.getTeamLeader();
-		Long teamTimes = teamData.getTeamTimes();
-		List<String> teamMembers = teamData.getTeamMembers();
-		List<ItemStack> teamItems = teamData.getTeamItems();
-		data.set(teamLeader+".Time", teamTimes);
-		data.set(teamLeader+".Members", teamMembers);
-		data.set(teamLeader+".Items", teamItems);
-		try {
-			data.save(dataFile);
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	//保存TeamList 根据情况视为定时保存/直接保存
-	static public void saveTeamList(){
+	public static void saveTeamList(){
+		Long oldTimes = System.currentTimeMillis();
+		data = new YamlConfiguration();
 		for (TeamData teamData : teamList){
 			String teamLeader = teamData.getTeamLeader();
 			Long teamTimes = teamData.getTeamTimes();
@@ -151,11 +112,12 @@ public class Data {
 			data.set(teamLeader+".Items", teamItems);
 		}
 		try {
-			data.save(dataFile);
+			data.save(DATA_FILE);
 		} 
 		catch (IOException e) {
 			e.printStackTrace();
 		}
+		Bukkit.getConsoleSender().sendMessage("[BS-Teams] 保存 §b"+teamList.size()+" §r条队伍数据，耗时: §b" + (System.currentTimeMillis()-oldTimes)+" §r(ms)");
 	}
 
 }

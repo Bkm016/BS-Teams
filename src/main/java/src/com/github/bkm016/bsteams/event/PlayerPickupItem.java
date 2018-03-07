@@ -41,21 +41,21 @@ public class PlayerPickupItem implements Listener {
 			@Override
 			public void run() {
 				//这里有个问题，是否取消我要不要放在第一行，还是放在Runnable?
-				if(e.isCancelled())return;
-				teamData.addTeamItems(item.clone()).save();
+				if (e.isCancelled())return;
+				teamData.addTeamItems(item.clone());
 				Inventory inv  = player.getInventory();
 				for (ItemStack invItem : inv){
 					if (invItem == null || !invItem.getType().equals(item.getType()) || !invItem.getItemMeta().equals(item.getItemMeta()) || invItem.getAmount() < item.getAmount()){
 		                continue;
 					}
 					invItem.setAmount(invItem.getAmount()-item.getAmount());
+					player.sendMessage("§d§o被队伍没收了啦 QAQ!!!");
 					break;
 				}
 			}
 			
 		}.runTask(BSTeamsPlugin.getInst());
 
-		player.sendMessage("§d§o被队伍没收了啦 QAQ!!!");
 	}
 
 }

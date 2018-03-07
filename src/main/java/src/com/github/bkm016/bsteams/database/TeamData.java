@@ -40,7 +40,10 @@ public class TeamData {
 		}
 	}
 	
-	//更换队长
+	@Deprecated
+	/*
+	 *更换队长 注意开启此功能时，需要null原队伍，否则会造成背包复制刷物品
+	 */
 	public TeamData setTeamLeader(String teamLeader){
 		this.teamLeader = teamLeader;
 		return this;
@@ -74,6 +77,12 @@ public class TeamData {
 		return this;
 	}
 	
+	//从物品列表中删除物品
+	public TeamData removeTeamItems(ItemStack item){
+		this.teamItems.remove(item);
+		return this;
+	}
+	
 	//设置物品列表
 	public TeamData setTeamItems(List<ItemStack> teamItems){
 		this.teamItems = teamItems;
@@ -86,35 +95,8 @@ public class TeamData {
 		return this;
 	}
 	
-	//快捷保存
-	public TeamData save(){
-		if (Config.getConfig(Config.ASYNCHRONOUSLY_SAVE).equalsIgnoreCase("true")){
-			TeamData teamData = this;
-			new BukkitRunnable(){
-				@Override
-				public void run() {
-					Data.saveTeam(teamData);
-				}
-				
-			}.runTaskAsynchronously(BSTeamsPlugin.getInst());
-		}else{
-			Data.saveTeam(this);
-		}
-		return this;
-	}
 	//快捷删除 
 	public void remove(){
-		if (Config.getConfig(Config.ASYNCHRONOUSLY_SAVE).equalsIgnoreCase("true")){
-			TeamData teamData = this;
-			new BukkitRunnable(){
-				@Override
-				public void run() {
-					Data.removeTeam(teamData);
-				}
-				
-			}.runTaskAsynchronously(BSTeamsPlugin.getInst());
-		}else{
-			Data.removeTeam(this);
-		}
+		Data.removeTeam(this);
 	}
 }

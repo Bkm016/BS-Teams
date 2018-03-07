@@ -1,11 +1,7 @@
 package com.github.bkm016.bsteams.command;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,10 +13,9 @@ import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.database.Data;
 import com.github.bkm016.bsteams.database.TeamData;
+import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.util.Message;
 import com.github.bkm016.bsteams.util.PlayerCommand;
-
-import me.skymc.taboolib.other.DateUtils;
 
 /**
  * @author sky
@@ -38,19 +33,27 @@ public class BSTeamsCommand implements CommandExecutor {
 		
         // 如果没有参数
         if (args.length == 0) {
+			String blackList = "join || create || quit || remove || open"; //控制台不能执行的指令
+			if (sender instanceof Player){
+				TeamData teamData = Data.getTeam(sender.getName());
+				if (teamData != null){//玩家有队伍时不能执行的指令
+					if (teamData.getTeamLeader().equals(sender.getName())){
+	    				blackList = "join || create || quit";//只允许 remove 解散队伍
+					}
+					else {
+	    				blackList = "join || create || remove";//只允许 quit 退出队伍
+					}
+    			}
+    			else {//当玩家没有队伍时不能执行的指令
+    				blackList = "remove || quit || remove || open";
+    			}
+			}
         	BSTeamsPlugin.getLanguage().get("Command.title").send(sender);
         	for (java.lang.reflect.Method method : this.getClass().getDeclaredMethods()) {
         		if (method.isAnnotationPresent(PlayerCommand.class)){
         			PlayerCommand sub = method.getAnnotation(PlayerCommand.class);
-        			if (Data.isTeam(sender.getName())){
-        				if ("join|create".contains(sub.cmd())){
-                            continue;
-        				}
-        			}
-        			else {
-        				if ("quit|remove".contains(sub.cmd())){
-                            continue;
-        				}
+        			if (blackList.contains(sub.cmd())){
+        				continue;
         			}
         			if (sender.hasPermission("bsteams." + sub.cmd())) {
         				// 帮助
@@ -88,22 +91,22 @@ public class BSTeamsCommand implements CommandExecutor {
 	}
 	//注意 以下都是测试指令，因考虑到书本的操作，这里只用作统计data是否有效
 	@PlayerCommand(cmd = "create")//创建队伍
-	public void onCreateTeamCommand(CommandSender sender,String args[]){
+	void onCreateTeamCommand(CommandSender sender,String args[]){
 		if (!(sender instanceof Player)){
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_CONSOLE).send(sender);
 			return;
 		}
 		Player player = (Player) sender;
-		if (Data.isTeam(player.getName())){
-			BSTeamsPlugin.getLanguage().get(Message.PLAYER_HAS_TEAM).send(sender);
+		if (Data.getTeam(player.getName()) != null){//玩家有队伍
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_HAS_TEAM).send(player);
 			return;
 		}
-		Data.createTeam(player);
-		BSTeamsPlugin.getLanguage().get(Message.PLAYER_CREATE_TEAM).send(sender);
+		Data.createTeam(player);//创建队伍
+		BSTeamsPlugin.getLanguage().get(Message.PLAYER_CREATE_TEAM).send(player);
 	}
 
 	@PlayerCommand(cmd = "remove")//解散队伍
-	public void onRemoveTeamCommand(CommandSender sender,String args[]){
+	void onRemoveTeamCommand(CommandSender sender,String args[]){
 		if (!(sender instanceof Player)){
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_CONSOLE).send(sender);
 			return;
@@ -111,50 +114,50 @@ public class BSTeamsCommand implements CommandExecutor {
 		Player player = (Player) sender;
 		TeamData teamData = Data.getTeam(player.getName());
 		if (teamData == null){//玩家没有队伍
-			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_HAS_TEAM).send(sender);
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_HAS_TEAM).send(player);
 			return;
 		}
 		if (!teamData.getTeamLeader().equals(player.getName())){//玩家不是队长
-			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM_LEADER).send(sender);
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM_LEADER).send(player);
 			return;
 		}
-		//TODO 防物品损失 
-		//1.当背包内有物品时无法解散(不存在的)
-		//2.先解散 然后创建一个<里面有东西就关不掉>的Inventory
-//		List<ItemStack> teamItems = teamData.getTeamItems();
+		if (teamData.getTeamItems().size()>0){//当背包内有物品时无法解散
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_HAS_TEAM_ITEMS).send(player);
+			return;
+		}
 		teamData.remove();
-		BSTeamsPlugin.getLanguage().get(Message.PLAYER_REMOVE_TEAM).send(sender);
+		BSTeamsPlugin.getLanguage().get(Message.PLAYER_REMOVE_TEAM).send(player);
 	}
 	
 	@PlayerCommand(cmd = "join",arg="<TeamName>")//加入队伍
-	public void onJoinTeamCommand(CommandSender sender,String args[]){
+	void onJoinTeamCommand(CommandSender sender,String args[]){
 		if (!(sender instanceof Player)){
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_CONSOLE).send(sender);
 			return;
 		}
-		if (args.length<2){
+		if (args.length<2){//不符合规范 可以添加扩展功能 - 显示目前所有在线队伍的json
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
 			return;
 		}
 		String teamLeader = args[1];
 		Player player = (Player) sender;
-		if (Data.isTeam(player.getName())){//玩家有队伍
+		if (Data.getTeam(player.getName()) != null){//玩家有队伍
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_HAS_TEAM).send(sender);
 			return;
 		}
 		TeamData teamData = Data.getTeam(teamLeader);
 		//判断队伍名是否为空或者是不是队长
-		if(teamData == null || !!teamData.getTeamLeader().equals(teamLeader)){
+		if (teamData == null || !!teamData.getTeamLeader().equals(teamLeader)){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
 			return;
 		}
-		teamData.addTeamMember(teamLeader).save();
+		teamData.addTeamMember(teamLeader);
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_QUIT_TEAM).send(sender);
 	}
 
 
 	@PlayerCommand(cmd = "quit")//退出队伍
-	public void onQuitTeamCommand(CommandSender sender,String args[]){
+	void onQuitTeamCommand(CommandSender sender,String args[]){
 		if (!(sender instanceof Player)){
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_CONSOLE).send(sender);
 			return;
@@ -169,15 +172,15 @@ public class BSTeamsCommand implements CommandExecutor {
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM_MEMBER).send(sender);
 			return;
 		}
-		teamData.removeTeamMember(player.getName()).save();
+		teamData.removeTeamMember(player.getName());
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_QUIT_TEAM).send(sender);
 	}
 
 
 	@PlayerCommand(cmd = "list")//队伍列表
-	public void onListTeamCommand(CommandSender sender,String args[]){
+	void onListTeamCommand(CommandSender sender,String args[]){
 		int i=0;
-		for(TeamData teamData: Data.getTeamList()){
+		for (TeamData teamData: Data.getTeamList()){
 			i++;
 			sender.sendMessage(i+"."+teamData.getTeamLeader() + "  人数: "+(teamData.getTeamMembers().size()+1)+"人");
 		}
@@ -186,7 +189,7 @@ public class BSTeamsCommand implements CommandExecutor {
 
 	
 	@PlayerCommand(cmd = "open")//打开简单的队伍菜单，测试用 没有事件监听
-	public void onOpenCommand(CommandSender sender,String args[]){
+	void onOpenCommand(CommandSender sender,String args[]){
 		if (!(sender instanceof Player)){
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_CONSOLE).send(sender);
 			return;
@@ -197,19 +200,14 @@ public class BSTeamsCommand implements CommandExecutor {
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_HAS_TEAM).send(sender);
 			return;
 		}
-		Inventory inv = Bukkit.createInventory(null, 54, "233");
-		for (ItemStack item : teamData.getTeamItems()){
-			inv.addItem(item);
-		}
-		player.openInventory(inv);
+		DropInventory.openDropInventory(player, 1, teamData);
 	}
 	
 	
         
 	@PlayerCommand(cmd = "reload")//重载插件
-	public void onReloadCommand(CommandSender sender,String args[]){
+	void onReloadCommand(CommandSender sender,String args[]){
         Config.loadConfig();
-        Data.loadData();
         BSTeamsPlugin.getLanguage().reload();
 		BSTeamsPlugin.getLanguage().get(Message.PLUGIN_RELOAD).send(sender);
 	}
