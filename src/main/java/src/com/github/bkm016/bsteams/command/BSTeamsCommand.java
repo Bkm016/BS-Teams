@@ -1,6 +1,9 @@
 package com.github.bkm016.bsteams.command;
 
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -23,6 +26,23 @@ import com.github.bkm016.bsteams.util.PlayerCommand;
  */
 public class BSTeamsCommand implements CommandExecutor {
 	
+	/**
+	 * 后台不允许执行的命令 
+	 */
+	private final List<String> BLACKLIST_CONSOLE = Arrays.asList("join", "create", "quit", "remove", "open");
+	/**
+	 * 队长不允许执行的命令
+	 */
+	private final List<String> BLACKLIST_LEADER = Arrays.asList("join", "create", "quit");
+	/**
+	 * 成员不允许执行的命令
+	 */
+	private final List<String> BLACKLIST_MEMBER = Arrays.asList("join", "create", "remove");
+	/**
+	 * 未加入队伍不允许执行的命令
+	 */
+	private final List<String> BLACKLIST_NOTEAM = Arrays.asList("remove", "quit", "open");
+	
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String label, String[] args) {
 	    // 判断是否有权限
@@ -30,29 +50,30 @@ public class BSTeamsCommand implements CommandExecutor {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_PER_CMD).send(sender);
             return false;
         }
-		
+        
+    	// 默认黑名单
+    	List<String> blacklist = BLACKLIST_CONSOLE;
         // 如果没有参数
         if (args.length == 0) {
-			String blackList = "join || create || quit || remove || open"; //控制台不能执行的指令
 			if (sender instanceof Player){
 				TeamData teamData = Data.getTeam(sender.getName());
-				if (teamData != null){//玩家有队伍时不能执行的指令
+				if (teamData != null){
 					if (teamData.getTeamLeader().equals(sender.getName())){
-	    				blackList = "join || create || quit";//只允许 remove 解散队伍
+						blacklist = BLACKLIST_LEADER;
+					} else {
+						blacklist = BLACKLIST_MEMBER;
 					}
-					else {
-	    				blackList = "join || create || remove";//只允许 quit 退出队伍
-					}
-    			}
-    			else {//当玩家没有队伍时不能执行的指令
-    				blackList = "remove || quit || remove || open";
+    			} else {
+    				blacklist = BLACKLIST_NOTEAM;
     			}
 			}
+			
+			// 帮助
         	BSTeamsPlugin.getLanguage().get("Command.title").send(sender);
         	for (java.lang.reflect.Method method : this.getClass().getDeclaredMethods()) {
         		if (method.isAnnotationPresent(PlayerCommand.class)){
         			PlayerCommand sub = method.getAnnotation(PlayerCommand.class);
-        			if (blackList.contains(sub.cmd())){
+        			if (blacklist.contains(sub.cmd())){
         				continue;
         			}
         			if (sender.hasPermission("bsteams." + sub.cmd())) {
@@ -71,6 +92,12 @@ public class BSTeamsCommand implements CommandExecutor {
             return true;
 		}
         else {
+        	// 判断指令
+        	if (blacklist.contains(args[0])) {
+        		BSTeamsPlugin.getLanguage().get("Command.blacklist").send(sender);
+        		return false;
+        	}
+        	// 获取指令
         	for (java.lang.reflect.Method method : this.getClass().getDeclaredMethods()){
                 if (method.isAnnotationPresent(PlayerCommand.class)){
 	                PlayerCommand sub = method.getAnnotation(PlayerCommand.class);

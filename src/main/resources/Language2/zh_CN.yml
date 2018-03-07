@@ -18,6 +18,7 @@ Command:
   open: '&7打开测试队伍背包'
   list: '&7测试-查看队伍列表'
   reload: '&7重新加载这个插件的配置'
+  blacklist: '&8[&3队伍&8] &4不允许这么做'
   
 #背包
 Inventory:
