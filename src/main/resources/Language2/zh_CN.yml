@@ -1,11 +1,11 @@
 # 语言文件
 Admin:
-  NoPermissionCommand: '&8[&d队伍&8] &c你没有权限执行此指令'
-  NoCommand: '&8[&d队伍&8] &c未找到此子指令: $SubCmd'
-  NoFormat: '&8[&d队伍&8] &c格式错误!'
-  NoOnline: '&8[&d队伍&8] &c玩家不在线或玩家不存在!'
-  NoConsole: '&8[&d队伍&8] &c控制台不允许执行此指令!'
-  PluginReload: '&8[&d队伍&8] §c插件已重载'
+  NoPermissionCommand: '&8[&3队伍&8] &c你没有权限执行此指令'
+  NoCommand: '&8[&3队伍&8] &c未找到此子指令: $SubCmd'
+  NoFormat: '&8[&3队伍&8] &c格式错误!'
+  NoOnline: '&8[&3队伍&8] &c玩家不在线或玩家不存在!'
+  NoConsole: '&8[&3队伍&8] &c控制台不允许执行此指令!'
+  PluginReload: '&8[&3队伍&8] §c插件已重载'
 
 # 命令
 Command:
@@ -18,14 +18,22 @@ Command:
   open: '&7打开测试队伍背包'
   list: '&7测试-查看队伍列表'
   reload: '&7重新加载这个插件的配置'
+  
+#背包
+Inventory:
+  Drop:
+    Name: '掉落物分配背包'
+    PageDown: '&r下一页'
+    PageUp: '&r上一页'
 
 #玩家消息
 Player:
-  CreateTeam: '&8[&d队伍&8] &3你成功创建了一个队伍!'
-  QuitTeam: '&8[&d队伍&8] &c你退出了 &6$Team &c的队伍!'
-  RemoveTeam: '&8[&d队伍&8] &c你解散了队伍!'
-  HasTeam: '&8[&d队伍&8] &c你已经存在一个队伍里了!'
-  NoHasTeam: '&8[&d队伍&8] &c你没有队伍!'
-  NoTeam: '&8[&d队伍&8] &c队伍不存在!'
-  NoTeamLeader: '&8[&d队伍&8] &c你不是队长!'
-  NoTeamMember: '&8[&d队伍&8] &c你不是队员!'
+  CreateTeam: '&8[&3队伍&8] &2你成功创建了一个队伍!'
+  QuitTeam: '&8[&3队伍&8] &c你退出了 &6$Team &c的队伍!'
+  RemoveTeam: '&8[&3队伍&8] &c你解散了队伍!'
+  HasTeam: '&8[&3队伍&8] &c你已经存在一个队伍里了!'
+  NoHasTeam: '&8[&3队伍&8] &c你没有队伍!'
+  NoTeam: '&8[&3队伍&8] &c队伍不存在!'
+  NoTeamLeader: '&8[&3队伍&8] &c你不是队长!'
+  NoTeamMember: '&8[&3队伍&8] &c你不是队员!'
+  HasTeamItems: '&8[&3队伍&8] &c请将掉落物分配背包内的物品清空!再解散队伍!'
