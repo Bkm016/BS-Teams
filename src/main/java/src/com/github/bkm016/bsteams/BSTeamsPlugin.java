@@ -8,12 +8,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.avaje.ebean.validation.Length;
 import com.github.bkm016.bsteams.command.BSTeamsCommand;
 import com.github.bkm016.bsteams.database.Data;
-import com.github.bkm016.bsteams.event.InventoryClick;
-import com.github.bkm016.bsteams.event.PlayerPickupItem;
+import com.github.bkm016.bsteams.event.ListenerInventoryClick;
+import com.github.bkm016.bsteams.event.ListenerPlayerChat;
+import com.github.bkm016.bsteams.event.ListenerPlayerItem;
 import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
-import com.github.bkm016.spigot.book.aa;
 
 import lombok.Getter;
 import me.skymc.taboolib.string.language2.Language2;
@@ -37,6 +37,9 @@ public class BSTeamsPlugin extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
+		// 载入 Language2
+		language = new Language2(this);
+		
 		// 注册命令
 		Bukkit.getPluginCommand("bsteams").setExecutor(new BSTeamsCommand());
 		// 载入配置
@@ -44,13 +47,10 @@ public class BSTeamsPlugin extends JavaPlugin {
 		// 载入数据
 		Data.loadData();
 		
-		// 载入 Language2
-		language = new Language2(this);
-		
 		// 监听器
-		Bukkit.getPluginManager().registerEvents(new aa(), this);
-		Bukkit.getPluginManager().registerEvents(new PlayerPickupItem(), this);
-		Bukkit.getPluginManager().registerEvents(new InventoryClick(), this);
+		Bukkit.getPluginManager().registerEvents(new ListenerPlayerItem(), this);
+		Bukkit.getPluginManager().registerEvents(new ListenerPlayerChat(), this);
+		Bukkit.getPluginManager().registerEvents(new ListenerInventoryClick(), this);
 	}
 	
 	@Override

@@ -27,7 +27,7 @@ import me.skymc.taboolib.itemnbtapi.NBTItem;
  * @since 2018年3月7日
  */
 
-public class InventoryClick implements Listener {
+public class ListenerInventoryClick implements Listener {
 	
 	@EventHandler
 	public void onClick(InventoryClickEvent e) {

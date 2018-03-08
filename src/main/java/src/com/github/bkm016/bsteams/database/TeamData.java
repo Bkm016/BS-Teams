@@ -1,15 +1,14 @@
 package com.github.bkm016.bsteams.database;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
 import com.github.bkm016.bsteams.util.Config;
@@ -21,7 +20,6 @@ import me.skymc.taboolib.inventory.ItemUtils;
  * @author Saukiya
  * @since 2018年3月6日
  */
-
 public class TeamData {
 	@Getter// 队长
 	private String teamLeader;
@@ -34,6 +32,9 @@ public class TeamData {
 	
 	@Getter // 物品提取记录
 	private List<NoteData> itemNotes = new LinkedList<>();
+	
+	@Getter
+	private HashMap<String, Boolean> teamOptions = new HashMap<>();
 	
 	@Getter// 队长在的时候更新时间
 	private long teamTimes;
@@ -57,16 +58,35 @@ public class TeamData {
 		}
 	}
 	
-	@Deprecated
-	/*
-	 *更换队长 注意开启此功能时，需要null原队伍，否则会造成背包复制刷物品
+	/**
+	 * 获取队伍所有成员，包括队长
+	 * 
+	 * @return {@link List}
 	 */
+	public List<String> getTeamMembersAll() {
+		List<String> list = new ArrayList<>(teamMembers);
+		list.add(teamLeader);
+		return list;
+	}
+	
+	/**
+	 * 更换队长 注意开启此功能时，需要null原队伍，否则会造成背包复制刷物品
+	 * 
+	 * @param teamLeader
+	 * @return
+	 */
+	@Deprecated
 	public TeamData setTeamLeader(String teamLeader){
 		this.teamLeader = teamLeader;
 		return this;
 	}
 	
-	//增加队员
+	/**
+	 * 增加队员
+	 * 
+	 * @param teamMember
+	 * @return
+	 */
 	public TeamData addTeamMember(String teamMember){
 		if (!this.teamMembers.contains(teamMember)){
 			this.teamMembers.add(teamMember);
@@ -74,7 +94,12 @@ public class TeamData {
 		return this;
 	}
 	
-	//减少队员
+	/**
+	 * 减少队员
+	 * 
+	 * @param teamMember
+	 * @return
+	 */
 	public TeamData removeTeamMember(String teamMember){
 		if (this.teamMembers.contains(teamMember)){
 			this.teamMembers.remove(teamMember);
@@ -82,37 +107,62 @@ public class TeamData {
 		return this;
 	}
 	
-	//清除队员 可能用不到
+	/**
+	 * 清除队员 可能用不到
+	 * 
+	 * @return
+	 */
 	public TeamData clearTeamMember(){
 		this.teamMembers.clear();
 		return this;
 	}
 	
-	//增加物品到列表
+	/**
+	 * 增加物品到列表
+	 * 
+	 * @param item
+	 * @return
+	 */
 	public TeamData addTeamItems(ItemStack item){
 		this.teamItems.add(item);
 		return this;
 	}
 	
-	//从物品列表中删除物品
+	/**
+	 * 从物品列表中删除物品
+	 * 
+	 * @param item
+	 * @return
+	 */
 	public TeamData removeTeamItems(ItemStack item){
 		this.teamItems.remove(item);
 		return this;
 	}
 	
-	//设置物品列表
+	/**
+	 * 设置物品列表
+	 * 
+	 * @param teamItems
+	 * @return
+	 */
 	public TeamData setTeamItems(List<ItemStack> teamItems){
 		this.teamItems = teamItems;
 		return this;
 	}
 	
-	//更新队伍保留时间
+	/**
+	 * 更新队伍保留时间
+	 * 
+	 * @return
+	 */
 	public TeamData updateTeamTime(){
 		this.teamTimes = System.currentTimeMillis();
 		return this;
 	}
 	
-	//快捷删除 
+	/**
+	 * 快捷删除 
+	 */
 	public void remove(){
 		Data.removeTeam(this);
 	}
@@ -148,5 +198,26 @@ public class TeamData {
 			itemNotes.remove(itemNotes.size() - 1);
 		}
 		return this;
+	}
+	
+	/**
+	 * 获取队伍设置
+	 * 
+	 * @param name 名称
+	 * @param defaultValue 默认值
+	 * @return boolean
+	 */
+	public boolean getTeamOption(String name, boolean defaultValue) {
+		return teamOptions.containsKey(name) ? teamOptions.get(name) : defaultValue;
+	}
+	
+	/**
+	 * 更改队伍设置
+	 * 
+	 * @param name 名称
+	 * @param value 值
+	 */
+	public void setTeamOption(String name, boolean value) {
+		teamOptions.put(name, value);
 	}
 }

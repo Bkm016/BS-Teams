@@ -1,5 +1,12 @@
 package com.github.bkm016.bsteams.book;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -11,6 +18,7 @@ import com.github.bkm016.spigot.book.BookFormatter;
 import com.github.bkm016.spigot.book.BookFormatter.BookBuilder;
 import com.github.bkm016.spigot.book.BookFormatter.PageBuilder;
 
+import lombok.Getter;
 import me.skymc.taboolib.string.language2.Language2;
 
 /**
@@ -21,7 +29,15 @@ public class BookHandler {
 	
 	private static BookHandler inst;
 	
-	private BookHandler() {}
+	@Getter
+	private HashMap<String, Boolean> options = new LinkedHashMap<>();
+	
+	private BookHandler() {
+		options.put("PUBLIC", true);
+		options.put("SHARE-EXPERIENCE", true);
+		options.put("SHARE-DROPS", true);
+		options.put("FRIENDLY-FIRE", false);
+	}
 	
 	public static BookHandler getInst() {
 		if (inst == null) {
@@ -48,11 +64,7 @@ public class BookHandler {
 		BookBuilder book = BookFormatter.writtenBook();
 		
 		// page 1
-		PageBuilder page1 = new BookFormatter.PageBuilder()
-				.add(lang.get("TEAM-INFO-TITLE").asString()).endLine()
-				.newLine()
-				.add(lang.get("TEAM-INFO-CAPTAIN").asString());
-		
+		PageBuilder page1 = new BookFormatter.PageBuilder().add(lang.get("TEAM-INFO-TITLE").asString()).endLine().newLine().add(lang.get("TEAM-INFO-CAPTAIN").asString());
 		// 获取队长
 		Player leader = Bukkit.getPlayerExact(teamData.getTeamLeader());
 		if (leader == null) {
@@ -101,6 +113,7 @@ public class BookHandler {
 			page1.newLine();
 		}
 		
+		// 补全成员
 		for (int i = teamData.getTeamMembers().size() ; i < Config.getConfig().getInt(Config.TEAM_SIZE) ; i++) {
 			page1.add(lang.get("TEAM-INFO-MEMBERS-EMPTY").asString());
 			// 如果是队长
@@ -114,8 +127,62 @@ public class BookHandler {
 			page1.newLine();
 		}
 		
+		// 队伍背包
+		page1.newLine();
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-INVENTORY").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams open"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INFO-BUTTON-INVENTORY-TEXT").asString()))
+				.build()).add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+		// 解散队伍
+		if (isLeader) {
+			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-DISSOLVE").asString())
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams dissolve"))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INFO-BUTTON-DISSOLVE-TEXT").asString()))
+					.build());
+		} 
+		// 退出队伍
+		else {
+			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-QUIT").asString())
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams quit"))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INFO-BUTTON-QUIT-TEXT").asString()))
+					.build());
+		}
+		
+		// 添加页数
+		book.addPages(page1.build());
+		
+		// 如果是队长
+		if (isLeader) {
+			// page 2
+			PageBuilder page2 = new BookFormatter.PageBuilder().add(lang.get("TEAM-OPTIONS-TITLE").asString()).endLine().newLine();
+			// 获取所有注册设置
+			for (Entry<String, Boolean> entry : BookHandler.getInst().getOptions().entrySet()) {
+				// 设置名称
+				page2.add(new BookFormatter.TextBuilder(lang.get("TEAM-OPTIONS-" + entry.getKey() + "-NAME").asString())
+						.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-OPTIONS-" + entry.getKey() + "-NAME-TEXT").asString()))
+						.build());
+				// 设置参数
+				if (teamData.getTeamOption(entry.getKey(), entry.getValue())) {
+					page2.add(new BookFormatter.TextBuilder(lang.get("TEAM-OPTIONS-" + entry.getKey() + "-ENABLE").asString())
+							.onClick(BookFormatter.ClickAction.runCommand("/bsteams option " + entry.getKey() + " false"))
+							.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-OPTIONS-" + entry.getKey() + "-ENABLE-TEXT").asString()))
+							.build());
+				}
+				else {
+					page2.add(new BookFormatter.TextBuilder(lang.get("TEAM-OPTIONS-" + entry.getKey() + "-DISABLE").asString())
+							.onClick(BookFormatter.ClickAction.runCommand("/bsteams option " + entry.getKey() + " true"))
+							.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-OPTIONS-" + entry.getKey() + "-DISABLE-TEXT").asString()))
+							.build());
+				}
+				// 换行
+				page2.newLine();
+			}
+			// 添加页数
+			book.addPages(page2.build());
+		}
+		
 		// 打开界面
-		BookFormatter.forceOpen(player, book.addPages(page1.build()).build());
+		BookFormatter.forceOpen(player, book.build());
 		// 音效
 		player.playSound(player.getLocation(), Sound.ENTITY_HORSE_ARMOR, 1f, 1f);
 	}

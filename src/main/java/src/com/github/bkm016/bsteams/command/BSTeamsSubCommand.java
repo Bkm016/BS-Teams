@@ -1,5 +1,6 @@
 package com.github.bkm016.bsteams.command;
 
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -127,6 +128,8 @@ public class BSTeamsSubCommand {
 	void onOpenCommand(CommandSender sender,String args[]){
 		// 打开背包
 		DropInventory.openInventory((Player) sender, 1, Data.getTeam(sender.getName()));
+		// 音效
+		((Player) sender).playSound(((Player) sender).getLocation(), Sound.BLOCK_CHEST_OPEN, 1f, 1f);
 	}
 	
 	/**
@@ -156,6 +159,12 @@ public class BSTeamsSubCommand {
 		BSTeamsPlugin.getLanguage().get(Message.PLUGIN_RELOAD).send(sender);
 	}
 	
+	/**
+	 * 队伍信息
+	 * 
+	 * @param sender
+	 * @param args
+	 */
 	@PlayerCommand(cmd = "info", type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
 	void onInfoCommand(CommandSender sender, String args[]) {
 		Player player = (Player) sender;
@@ -177,5 +186,32 @@ public class BSTeamsSubCommand {
 		}
 		// 打开界面
 		BookHandler.getInst().openInfo(player, teamData);
+	}
+	
+	/**
+	 * 队伍设置
+	 * 
+	 * @param sender
+	 * @param args
+	 */
+	@PlayerCommand(cmd = "option", hide = true, type = CommandType.TEAM_LEADER)
+	void onOptionsCommand(CommandSender sender, String[] args) {
+		if (args.length == 3) {
+			Player player = (Player) sender;
+			TeamData teamData = Data.getTeam(player.getName());
+			try {
+				teamData.setTeamOption(args[1], Boolean.valueOf(args[2]));
+				// 提示
+				BSTeamsPlugin.getLanguage().get("TEAM-OPTIONS-MESSAGE-SUCCESS").send(player);
+				// 音效
+				player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1f, 1f);
+			}
+			catch (Exception e) {
+				// 提示
+				BSTeamsPlugin.getLanguage().get("TEAM-OPTIONS-MESSAGE-FALL").send(player);
+				// 音效
+				player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+			}
+		}
 	}
 }

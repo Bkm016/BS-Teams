@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -42,10 +43,10 @@ public class Data {
 		
 		// 检测数据库是否存在
 		if (!DATA_FILE.exists()){
-	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §cCreate Data.dat");
+	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §c数据不存在, 开始创建...");
 		}
 		else {
-	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §aFind Data.dat");
+			Bukkit.getConsoleSender().sendMessage("[BS-Teams] §7载入队伍数据...");
 			try {
 				data.load(DATA_FILE);
 			} 
@@ -77,6 +78,12 @@ public class Data {
 							data.getLong(teamLeader + ".Notes." + id + ".Date")));
 				}
 			}
+			// 载入设置
+			if (data.contains(teamLeader + ".Options")) {
+				for (String id : data.getConfigurationSection(teamLeader + ".Options").getKeys(false)) {
+					teamData.setTeamOption(id, data.getBoolean(teamLeader + ".Options." + id));
+				}
+			}
 			teamList.add(teamData);
 		}
 		
@@ -86,7 +93,7 @@ public class Data {
 			public void run() {
 				saveTeamList();
 			}
-		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 600, 600);//测试 - 每分钟
+		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 600, 600);
 	}
 	
 	/**
@@ -162,10 +169,19 @@ public class Data {
 				data.set(teamLeader + ".Notes." + i + ".Date", note.getDate());
 				i++;
 			}
+			for (Entry<String, Boolean> value : teamData.getTeamOptions().entrySet()) {
+				data.set(teamLeader + ".Options." + value.getKey(), value.getValue());
+			}
 		}
-		// 保存配置
+		// 保存
 		DataUtils.saveConfiguration(data, DATA_FILE);
-		Bukkit.getConsoleSender().sendMessage("[BS-Teams] 保存 §b"+teamList.size()+" §r条队伍数据，耗时: §b" + ((System.nanoTime() - oldTimes)/1000000D)+" §r(ms)");
+		// 时间
+		double endTimes = ((System.nanoTime() - oldTimes)/1000000D);
+		// 提示
+		BSTeamsPlugin.getLanguage().get("Admin.DataSaved")
+			.addPlaceholder("$teams", String.valueOf(teamList.size()))
+			.addPlaceholder("$time", String.valueOf(endTimes))
+			.send(Bukkit.getConsoleSender());
 	}
 
 }

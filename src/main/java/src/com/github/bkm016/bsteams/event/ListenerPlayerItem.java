@@ -18,7 +18,7 @@ import com.github.bkm016.bsteams.database.TeamData;
  * @since 2018年3月7日
  */
 
-public class PlayerPickupItem implements Listener {
+public class ListenerPlayerItem implements Listener {
 
 	@EventHandler
 	public void onPlayerPickupItemEvent(PlayerPickupItemEvent e) {
