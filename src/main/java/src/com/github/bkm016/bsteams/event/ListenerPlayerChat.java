@@ -13,7 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
-import com.github.bkm016.bsteams.database.Data;
+import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.util.Config;
 
@@ -29,7 +29,7 @@ public class ListenerPlayerChat implements Listener {
 			return;
 		}
 		// 获取队伍
-		TeamData teamData = Data.getTeam(e.getPlayer().getName());
+		TeamData teamData = TeamDataManager.getTeam(e.getPlayer().getName());
 		if (teamData == null || !e.getMessage().startsWith(BSTeamsPlugin.getLanguage().get("TEAM-CHAT-KEY").asString())) {
 			return;
 		}

@@ -106,3 +106,14 @@ TEAM-OPTIONS-MESSAGE-FALL: '&8[&3队伍&8] &4设置不存在'
 # 队伍聊天
 TEAM-CHAT-KEY: '@'
 TEAM-CHAT-FORMAT: '&7[&b队伍&f] &8$player &7($distancem)&f: $message'
+
+# 队伍伤害
+TEAM-DAMAGE-CANCEL: '&7[&b队伍&f] &4队长关闭了队友伤害'
+
+# 队伍经验
+TEAM-EXPERIENCE-MEMBER: '&7[&b队伍&f] &7成员 &f$player &7为你增加了 &f$amount &7点经验'
+TEAM-EXPERIENCE-LEADER: '&7[&b队伍&f] &7你增加了 &f$amount1 &7点经验, 周围 &f$players &7名队员每人增加 &f$amount2/$all &7点经验'
+
+# 队伍物品
+TEAM-DROPS-MESSAGE: '&7[&b队伍&f] &7成员 &f$player &7获得的 &f$item &7已添加到队伍背包'
+TEAM-DROPS-MESSAGE-TAKE: '&7[&b队伍&f] &7成员 &f$player &7从队伍背包中取走了 &f$item'

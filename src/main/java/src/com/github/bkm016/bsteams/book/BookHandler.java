@@ -33,21 +33,37 @@ public class BookHandler {
 	private HashMap<String, Boolean> options = new LinkedHashMap<>();
 	
 	private BookHandler() {
-		options.put("PUBLIC", true);
-		options.put("SHARE-EXPERIENCE", true);
-		options.put("SHARE-DROPS", true);
-		options.put("FRIENDLY-FIRE", false);
+		reloadOptions();
 	}
 	
 	public static BookHandler getInst() {
 		if (inst == null) {
 			synchronized (BookHandler.class) {
 				if (inst == null) {
-					return new BookHandler();
+					inst = new BookHandler();
 				}
 			}
 		}
 		return inst;
+	}
+	
+	/**
+	 * 重载队伍设置
+	 */
+	public void reloadOptions() {
+		options.clear();
+		// 公开
+		options.put("PUBLIC", true);
+		// 友方伤害
+		options.put("FRIENDLY-FIRE", false);
+		// 分享经验
+		if (Config.getConfig().getBoolean(Config.SHARE_EXPERIENCE_ENABLE)) {
+			options.put("SHARE-EXPERIENCE", true);
+		}
+		// 分享掉落
+		if (Config.getConfig().getBoolean(Config.SHARE_DROPS_ENABLE)) {
+			options.put("SHARE-DROPS", true);
+		}
 	}
 	
 	/**
@@ -129,10 +145,13 @@ public class BookHandler {
 		
 		// 队伍背包
 		page1.newLine();
-		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-INVENTORY").asString())
-				.onClick(BookFormatter.ClickAction.runCommand("/bsteams open"))
-				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INFO-BUTTON-INVENTORY-TEXT").asString()))
-				.build()).add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+		// 是否启用队伍背包
+		if (teamData.getTeamOption("SHARE-DROPS", true)) {
+			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-INVENTORY").asString())
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams open"))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INFO-BUTTON-INVENTORY-TEXT").asString()))
+					.build()).add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+		}
 		// 解散队伍
 		if (isLeader) {
 			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-DISSOLVE").asString())

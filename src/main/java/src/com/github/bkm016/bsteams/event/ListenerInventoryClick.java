@@ -1,7 +1,10 @@
 package com.github.bkm016.bsteams.event;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,7 +15,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
-import com.github.bkm016.bsteams.database.Data;
+import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
@@ -70,6 +73,21 @@ public class ListenerInventoryClick implements Listener {
 					holder.getTeamData().addItemNote(player, e.getCurrentItem());
 					// 刷新界面
 					holder.getTeamData().updateInventory();
+					
+					// 获取成员
+					List<Player> players = new ArrayList<>();
+					for (String name : holder.getTeamData().getTeamMembersAll()) {
+						Player member = Bukkit.getPlayerExact(name);
+						if (member != null) {
+							players.add(member);
+						}
+					}
+					
+					// 提示信息
+					BSTeamsPlugin.getLanguage().get("TEAM-DROPS-MESSAGE-TAKE")
+						.addPlaceholder("$player", player.getName())
+						.addPlaceholder("$item", ItemUtils.getCustomName(e.getCurrentItem()) + "§f * " + e.getCurrentItem().getAmount())
+						.send(players);
 				}
 			}
 		}

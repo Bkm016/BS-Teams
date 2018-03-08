@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.command.enums.CommandType;
-import com.github.bkm016.bsteams.database.Data;
+import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.util.Message;
@@ -39,7 +39,7 @@ public class BSTeamsCommand implements CommandExecutor {
     	// 指令类型
     	CommandType type = CommandType.CONSOLE;
     	if (sender instanceof Player){
-			TeamData teamData = Data.getTeam(sender.getName());
+			TeamData teamData = TeamDataManager.getTeam(sender.getName());
 			if (teamData != null){
 				if (teamData.getTeamLeader().equals(sender.getName())){
 					type = CommandType.TEAM_LEADER;

@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.book.BookHandler;
 import com.github.bkm016.bsteams.command.enums.CommandType;
-import com.github.bkm016.bsteams.database.Data;
+import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.util.Config;
@@ -29,7 +29,7 @@ public class BSTeamsSubCommand {
 	@PlayerCommand(cmd = "create", type = CommandType.PLAYER)
 	void onCreateTeamCommand(CommandSender sender,String args[]) {
 		// 创建队伍
-		Data.createTeam((Player) sender);
+		TeamDataManager.createTeam((Player) sender);
 		// 提示信息
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_CREATE_TEAM).send(sender);
 	}
@@ -43,7 +43,7 @@ public class BSTeamsSubCommand {
 	@PlayerCommand(cmd = "dissolve", type = CommandType.TEAM_LEADER)
 	void onRemoveTeamCommand(CommandSender sender, String args[]){
 		Player player = (Player) sender;
-		TeamData teamData = Data.getTeam(player.getName());
+		TeamData teamData = TeamDataManager.getTeam(player.getName());
 		// 当背包内有物品时无法解散
 		if (teamData.getTeamItems().size() > 0) {
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_HAS_TEAM_ITEMS).send(player);
@@ -69,7 +69,7 @@ public class BSTeamsSubCommand {
 			return;
 		}
 		Player player = (Player) sender;
-		TeamData teamData = Data.getTeam(args[1]);
+		TeamData teamData = TeamDataManager.getTeam(args[1]);
 		// 判断队伍名是否为空或者是不是队长
 		if (teamData == null || !!teamData.getTeamLeader().equals(args[1])){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
@@ -93,7 +93,7 @@ public class BSTeamsSubCommand {
 	@PlayerCommand(cmd = "quit", type = CommandType.TEAM_MEMBER)
 	void onQuitTeamCommand(CommandSender sender,String args[]){
 		Player player = (Player) sender;
-		TeamData teamData = Data.getTeam(player.getName());
+		TeamData teamData = TeamDataManager.getTeam(player.getName());
 		// 退出队伍
 		teamData.removeTeamMember(player.getName());
 		// 提示
@@ -112,7 +112,7 @@ public class BSTeamsSubCommand {
 	@PlayerCommand(cmd = "list")
 	void onListTeamCommand(CommandSender sender,String args[]){
 		int i=0;
-		for (TeamData teamData: Data.getTeamList()){
+		for (TeamData teamData: TeamDataManager.getTeamList()){
 			i++;
 			sender.sendMessage(i+"."+teamData.getTeamLeader() + "  人数: "+(teamData.getTeamMembers().size()+1)+"人");
 		}
@@ -126,8 +126,12 @@ public class BSTeamsSubCommand {
 	 */
 	@PlayerCommand(cmd = "open", type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
 	void onOpenCommand(CommandSender sender,String args[]){
+		TeamData teamData = TeamDataManager.getTeam(sender.getName());
+		if (!teamData.getTeamOption("SHARE-DROPS", true)) {
+			return;
+		}
 		// 打开背包
-		DropInventory.openInventory((Player) sender, 1, Data.getTeam(sender.getName()));
+		DropInventory.openInventory((Player) sender, 1, teamData);
 		// 音效
 		((Player) sender).playSound(((Player) sender).getLocation(), Sound.BLOCK_CHEST_OPEN, 1f, 1f);
 	}
@@ -141,7 +145,7 @@ public class BSTeamsSubCommand {
 	@PlayerCommand(cmd = "clearnote", hide = true, type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
 	void clearNoteCommand(CommandSender sender, String args[]) {
 		// 清除日志
-		Data.getTeam(sender.getName()).getItemNotes().clear();
+		TeamDataManager.getTeam(sender.getName()).getItemNotes().clear();
 		// 提示信息
 		BSTeamsPlugin.getLanguage().get("Command.clearnote").send(sender);
 	}
@@ -170,12 +174,12 @@ public class BSTeamsSubCommand {
 		Player player = (Player) sender;
 		TeamData teamData = null;
 		if (args.length == 1) {
-			teamData = Data.getTeam(player.getName());
+			teamData = TeamDataManager.getTeam(player.getName());
 		}
 		else {
 			// 判断权限
 			if (sender.hasPermission("bsteams.admin")) {
-				teamData = Data.getTeam(args[1]);
+				teamData = TeamDataManager.getTeam(args[1]);
 				// 判断队伍名是否为空或者是不是队长
 				if (teamData == null) {
 					BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
@@ -198,7 +202,7 @@ public class BSTeamsSubCommand {
 	void onOptionsCommand(CommandSender sender, String[] args) {
 		if (args.length == 3) {
 			Player player = (Player) sender;
-			TeamData teamData = Data.getTeam(player.getName());
+			TeamData teamData = TeamDataManager.getTeam(player.getName());
 			try {
 				teamData.setTeamOption(args[1], Boolean.valueOf(args[2]));
 				// 提示

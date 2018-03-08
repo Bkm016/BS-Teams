@@ -39,9 +39,6 @@ public class TeamData {
 	@Getter// 队长在的时候更新时间
 	private long teamTimes;
 	
-	@Getter// 队长在的时候更新时间
-	private Boolean pickup = true;
-	
 	public TeamData(String teamLeader,List<String> teamMembers,List<ItemStack> teamItems,Long times){
 		this.teamLeader = teamLeader;
 		if (teamMembers != null) {
@@ -164,7 +161,7 @@ public class TeamData {
 	 * 快捷删除 
 	 */
 	public void remove(){
-		Data.removeTeam(this);
+		TeamDataManager.removeTeam(this);
 	}
 	
 	/**

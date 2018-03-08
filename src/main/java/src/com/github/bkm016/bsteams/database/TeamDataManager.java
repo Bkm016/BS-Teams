@@ -23,7 +23,7 @@ import lombok.Getter;
 import me.skymc.taboolib.other.DateUtils;
 import me.skymc.taboolib.playerdata.DataUtils;
 
-public class Data {
+public class TeamDataManager {
 	
 	public final static File DATA_FILE = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Data.dat");
 	

@@ -32,6 +32,9 @@ public class Config {
 	public static final String DATE_FORMAT = "Settings.date-format";
 	public static final String TEAM_SIZE = "Settings.team-size";
 	public static final String TEAM_CHAT = "Settings.team-chat";
+	public static final String SHARE_EXPERIENCE_ENABLE = "Settings.share-experience.enable";
+	public static final String SHARE_EXPERIENCE_RADIUS = "Settings.share-experience.radius";
+	public static final String SHARE_DROPS_ENABLE = "Settings.share-drops";
 	
 	/**
 	 * 重载配置文件
@@ -118,6 +121,9 @@ public class Config {
 		config.set(NOTE_SIZE, 10);
 		config.set(TEAM_SIZE, 5);
 		config.set(TEAM_CHAT, true);
+		config.set(SHARE_EXPERIENCE_ENABLE, true);
+		config.set(SHARE_EXPERIENCE_RADIUS, 10);
+		config.set(SHARE_DROPS_ENABLE, true);
 		config.set(DATE_FORMAT, "yyyy-MM-dd HH:mm:ss");
 		// 保存文件
 		DataUtils.saveConfiguration(config, configFile);

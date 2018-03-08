@@ -7,9 +7,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.avaje.ebean.validation.Length;
 import com.github.bkm016.bsteams.command.BSTeamsCommand;
-import com.github.bkm016.bsteams.database.Data;
+import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.event.ListenerInventoryClick;
 import com.github.bkm016.bsteams.event.ListenerPlayerChat;
+import com.github.bkm016.bsteams.event.ListenerPlayerDamage;
+import com.github.bkm016.bsteams.event.ListenerPlayerExperience;
 import com.github.bkm016.bsteams.event.ListenerPlayerItem;
 import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
 import com.github.bkm016.bsteams.util.Config;
@@ -45,17 +47,19 @@ public class BSTeamsPlugin extends JavaPlugin {
 		// 载入配置
 		Config.loadConfig();
 		// 载入数据
-		Data.loadData();
+		TeamDataManager.loadData();
 		
 		// 监听器
 		Bukkit.getPluginManager().registerEvents(new ListenerPlayerItem(), this);
 		Bukkit.getPluginManager().registerEvents(new ListenerPlayerChat(), this);
+		Bukkit.getPluginManager().registerEvents(new ListenerPlayerDamage(), this);
+		Bukkit.getPluginManager().registerEvents(new ListenerPlayerExperience(), this);
 		Bukkit.getPluginManager().registerEvents(new ListenerInventoryClick(), this);
 	}
 	
 	@Override
 	public void onDisable() {
-		Data.saveTeamList();
+		TeamDataManager.saveTeamList();
 		// 循环玩家
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			if (player.getOpenInventory().getTopInventory().getHolder() instanceof DropInventoryHolder) {

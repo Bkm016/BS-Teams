@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
-import com.github.bkm016.bsteams.database.Data;
+import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.database.NoteData;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.util.Config;
