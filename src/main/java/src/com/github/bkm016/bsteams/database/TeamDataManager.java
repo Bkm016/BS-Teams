@@ -47,18 +47,24 @@ public class TeamDataManager {
 	
 	//获取加入列表
 	public static List<String> getjoinList(String playerName){
+		List<String> joinList = new ArrayList<String>();
 		if (joinMap.containsKey(playerName)){
 			return joinMap.get(playerName);
+		}else{
+			joinMap.put(playerName, joinList);
 		}
-		return joinMap.put(playerName, new ArrayList<String>());
+		return joinList;
 	}
 	
 	//获取邀请列表
 	public static List<String> getinviteList(String playerName){
+		List<String> inviteList = new ArrayList<String>();
 		if (inviteMap.containsKey(playerName)){
 			return inviteMap.get(playerName);
+		}else{
+			inviteMap.put(playerName, new ArrayList<String>());
 		}
-		return inviteMap.put(playerName, new ArrayList<String>());
+		return inviteList;
 	}
 	
 	// 定时清理joinMap

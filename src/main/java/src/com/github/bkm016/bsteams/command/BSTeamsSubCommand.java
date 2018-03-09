@@ -66,7 +66,7 @@ public class BSTeamsSubCommand {
 	 * @param sender
 	 * @param args
 	 */
-	@PlayerCommand(cmd = "join", arg="<Leader>", type = CommandType.PLAYER)
+	@PlayerCommand(cmd = "join", arg="<leader>", type = CommandType.PLAYER)
 	void onJoinTeamCommand(CommandSender sender, String args[]) {
 		// 不符合规范 可以添加扩展功能 - 显示目前所有在线队伍的json
 		if (args.length < 2) {
@@ -75,7 +75,7 @@ public class BSTeamsSubCommand {
 		}
 		Player player = (Player) sender;
 		Player leaderPlayer = Bukkit.getPlayerExact(args[1]);
-		if(leaderPlayer == null){
+		if (leaderPlayer == null){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_LEADER_NO_ONLINE).send(sender);
 			return;
 		}
@@ -87,6 +87,15 @@ public class BSTeamsSubCommand {
 		}
 		// 加入数据储存
 		List<String> joinList = TeamDataManager.getjoinList(args[1]);
+		if (joinList.size()>0){
+			//清除上次的申请记录
+			for(int i=joinList.size()-1;i>=0;i--){
+				String playerAndTime = joinList.get(i);
+				if (playerAndTime.contains(sender.getName())){
+					joinList.remove(i);
+				}
+			}
+		}
 		joinList.add(sender.getName()+":"+(System.currentTimeMillis()+DateUtils.formatDate("3m")));
 		// 信息发送
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_JOIN_TO_PLAYER).send(sender);
@@ -101,12 +110,12 @@ public class BSTeamsSubCommand {
 	 * @param sender
 	 * @param args
 	 */
-	@PlayerCommand(cmd = "accpetJoin", arg="<Player>", hide = true ,type = CommandType.TEAM_LEADER)
+	@PlayerCommand(cmd = "acceptJoin", arg="<player>", hide = true ,type = CommandType.TEAM_LEADER)
 	void onAccpetJoinCommand(CommandSender sender, String args[]) {
 		List<String> joinList = TeamDataManager.getjoinList(sender.getName());
 		if (args.length < 2) {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
-			if(joinList.size() > 0){
+			if (joinList.size() > 0){
 				String place = "";
 				for (String playerAndTime : joinList){
 					place += playerAndTime.split(":")[0] + "  ";
@@ -120,7 +129,7 @@ public class BSTeamsSubCommand {
 		}
 		for (String playerAndTime : joinList){
 			// 检测邀请列表是否有这个玩家 并且检测邀请是否过期
-			if (playerAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() > Long.valueOf(playerAndTime.split(":")[1])){
+			if (playerAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() < Long.valueOf(playerAndTime.split(":")[1])){
 				// 接受请求 清除列表
 				joinList.clear();
 				TeamDataManager.getTeam(sender.getName()).addTeamMember(args[1]);
@@ -144,6 +153,34 @@ public class BSTeamsSubCommand {
 	 * @param sender
 	 * @param args
 	 */
+	@PlayerCommand(cmd = "kick", type = CommandType.TEAM_LEADER)
+	void onKickMemberCommand(CommandSender sender,String args[]){
+		if (args.length < 2) {
+			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+			return;
+		}
+		TeamData teamData = TeamDataManager.getTeam(sender.getName());
+		// 玩家不在队伍里
+		if (!teamData.getTeamMembers().contains(args[1])){
+			
+		}
+		// 踢出玩家
+		teamData.removeTeamMember(args[1]);
+		Player kickPlayer = Bukkit.getPlayerExact(args[1]);
+		if (kickPlayer != null){
+			// TODO 提示被踢出的玩家
+		}
+		
+		// TODO 提示队员+队长
+		
+	}
+
+	/**
+	 * 退出队伍
+	 * 
+	 * @param sender
+	 * @param args
+	 */
 	@PlayerCommand(cmd = "quit", type = CommandType.TEAM_MEMBER)
 	void onQuitTeamCommand(CommandSender sender,String args[]){
 		Player player = (Player) sender;
@@ -154,7 +191,8 @@ public class BSTeamsSubCommand {
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_QUIT_TEAM)
 			.addPlaceholder("$Team", teamData.getTeamLeader())
 			.send(sender);
-		// 提示队长
+		// TODO 提示队员+队长
+		
 	}
 	
 	/**
@@ -163,10 +201,10 @@ public class BSTeamsSubCommand {
 	 * @param sender
 	 * @param args
 	 */
-	@PlayerCommand(cmd = "invite", arg="<Player>", type = CommandType.TEAM_LEADER)
+	@PlayerCommand(cmd = "invite", arg="<player>", type = CommandType.TEAM_LEADER)
 	void onInviteCommand(CommandSender sender, String args[]) {
-		// 不符合规范 可以添加扩展功能 - 显示目前所有在线队伍的json
 		if (args.length < 2) {
+			//TODO 当没有<player>时，可以展示在线玩家列表
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
 			return;
 		}
@@ -176,8 +214,24 @@ public class BSTeamsSubCommand {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_ONLINE).send(sender);
 			return;
 		}
+		// 识别玩家是否已经在队伍里
+		if (TeamDataManager.getTeam(invitePlayer.getName()) != null){
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_PLAYER_HAS_TEAM)
+				.addPlaceholder("$Player", invitePlayer.getName())
+				.send(sender);
+			return;
+		}
 		// 邀请数据储存 被邀请玩家 - 队长名 - 时间
 		List<String> inviteList = TeamDataManager.getinviteList(invitePlayer.getName());
+		if (inviteList.size()>0){
+			//清除上次的申请记录
+			for(int i=inviteList.size()-1;i>=0;i--){
+				String leaderAndTime = inviteList.get(i);
+				if (leaderAndTime.contains(sender.getName())){
+					inviteList.remove(i);
+				}
+			}
+		}
 		inviteList.add(sender.getName()+":"+(System.currentTimeMillis()+DateUtils.formatDate("3m")));
 		// 信息发送
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_INVITE_TO_lEADER).send(sender);
@@ -192,15 +246,15 @@ public class BSTeamsSubCommand {
 	 * @param sender
 	 * @param args
 	 */
-	@PlayerCommand(cmd = "accpet", arg="<Leader>", hide = true ,type = CommandType.PLAYER)
+	@PlayerCommand(cmd = "accept", arg="<leader>", hide = true ,type = CommandType.PLAYER)
 	void onAccpetCommand(CommandSender sender, String args[]) {
 		List<String> inviteList = TeamDataManager.getinviteList(sender.getName());
 		if (args.length < 2) {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
-			if(inviteList.size() > 0){
+			if (inviteList.size() > 0){
 				String place = "";
-				for (String LeaderAndTime : inviteList){
-					place += LeaderAndTime.split(":")[0] + "  ";
+				for (String leaderAndTime : inviteList){
+					place += leaderAndTime.split(":")[0] + "  ";
 				}
 				// 可接受队伍列表消息
 				BSTeamsPlugin.getLanguage().get(Message.PLAYER_INVITE_LIST_TO_PLAYER)
@@ -211,7 +265,7 @@ public class BSTeamsSubCommand {
 		}
 		for (String leaderAndTime : inviteList){
 			// 检测邀请列表是否有这个玩家 并且检测邀请是否过期
-			if (leaderAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() > Long.valueOf(leaderAndTime.split(":")[1])){
+			if (leaderAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() < Long.valueOf(leaderAndTime.split(":")[1])){
 				// 接受请求 清除列表
 				inviteList.clear();
 				TeamDataManager.getTeam(args[1]).addTeamMember(sender.getName());

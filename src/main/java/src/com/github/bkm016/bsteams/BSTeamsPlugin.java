@@ -7,12 +7,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.avaje.ebean.validation.Length;
 import com.github.bkm016.bsteams.command.BSTeamsCommand;
+import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.event.ListenerInventoryClick;
 import com.github.bkm016.bsteams.event.ListenerPlayerChat;
 import com.github.bkm016.bsteams.event.ListenerPlayerDamage;
 import com.github.bkm016.bsteams.event.ListenerPlayerExperience;
 import com.github.bkm016.bsteams.event.ListenerPlayerItem;
+import com.github.bkm016.bsteams.event.ListenerPlayerQuit;
 import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
@@ -54,17 +56,25 @@ public class BSTeamsPlugin extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(new ListenerPlayerChat(), this);
 		Bukkit.getPluginManager().registerEvents(new ListenerPlayerDamage(), this);
 		Bukkit.getPluginManager().registerEvents(new ListenerPlayerExperience(), this);
+		Bukkit.getPluginManager().registerEvents(new ListenerPlayerQuit(), this);
 		Bukkit.getPluginManager().registerEvents(new ListenerInventoryClick(), this);
 	}
 	
 	@Override
 	public void onDisable() {
-		TeamDataManager.saveTeamList();
 		// 循环玩家
 		for (Player player : Bukkit.getOnlinePlayers()) {
-			if (player.getOpenInventory().getTopInventory().getHolder() instanceof DropInventoryHolder) {
+			// 检查玩家是否是队长，是则更新最后登陆时间
+			TeamData teamData = TeamDataManager.getTeam(player.getName());
+			if (teamData != null && teamData.getTeamLeader().equals(player.getName())){
+				teamData.updateTeamTime();
+			}
+			// 检查玩家是否打开了掉落物背包
+			if (player.getOpenInventory().getTopInventory().getTitle().equals(getLanguage().get(Message.INVENTORY_DROP_NAME).asString())) {
 				player.closeInventory();
 			}
 		}
+		//保存数据
+		TeamDataManager.saveTeamList();
 	}
 }

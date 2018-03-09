@@ -92,6 +92,7 @@ public class BSTeamsCommand implements CommandExecutor {
 			                	method.invoke(BSTeamsSubCommand.class.newInstance(), sender, args);
 			                } catch (Exception e) {
 			                	//
+			                	e.printStackTrace();
 			                }
 	                	}
 		                return true;

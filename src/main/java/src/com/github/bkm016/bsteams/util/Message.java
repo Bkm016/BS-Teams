@@ -17,6 +17,7 @@ public class Message {
 	public static final String PLAYER_LEADER_NO_ONLINE = "Player.LeaderNoOnline";
 	public static final String PLAYER_REMOVE_TEAM = "Player.RemoveTeam";
 	public static final String PLAYER_HAS_TEAM = "Player.HasTeam";
+	public static final String PLAYER_PLAYER_HAS_TEAM = "Player.PlayerHasTeam";
 	public static final String PLAYER_NO_HAS_TEAM = "Player.NoHasTeam";
 	public static final String PLAYER_NO_TEAM_LEADER = "Player.NoTeamLeader";
 	public static final String PLAYER_NO_TEAM_MEMBER = "Player.NoTeamMember";
