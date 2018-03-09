@@ -38,7 +38,8 @@ Inventory:
 # 玩家消息
 Player:
   CreateTeam: '&8[&3队伍&8] &2你成功创建了一个队伍!'
-  QuitTeam: '&8[&3队伍&8] &c你退出了 &6$Team &c的队伍!'
+  QuitTeam: '&8[&3队伍&8] &c你退出了 &4$Team &c的队伍!'
+  QuitTeamMember: '&8[&3队伍&8] &c成员 &4$player &c离开了你的队伍!'
   JoinTeam: '&8[&3队伍&8] &7你加入了 &f$Team &7的队伍!'
   RemoveTeam: '&8[&3队伍&8] &c你解散了队伍!'
   HasTeam: '&8[&3队伍&8] &c你已经存在一个队伍里了!'
@@ -58,6 +59,9 @@ Player:
   AccpetToLeader: '&8[&3队伍&8] &7玩家 &a$Player &7加入了你的队伍!'
   AccpetToPlayer: '&8[&3队伍&8] &7你加入了 &a$Player &7的队伍!'
   NoAccpetToPlayer: '&8[&3队伍&8] &c邀请请求不存在或已过时!'
+  KickNotfound: '&8[&3队伍&8] &c成员 &4$name &4不存在!'
+  KickMemberNotify: '&8[&3队伍&8] &c成员 &4$name &4已被移除队伍'
+  KickMemberPlayer: '&8[&3队伍&8] &c你已被移出队伍!'
   
 # 队伍信息
 TEAM-INFO-TITLE: '      < &l队伍信息 &r>'

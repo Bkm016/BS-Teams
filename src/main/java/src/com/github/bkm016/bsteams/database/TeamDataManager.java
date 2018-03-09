@@ -18,9 +18,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
+import com.github.bkm016.bsteams.api.BSTeamsPluginAPI;
 import com.github.bkm016.bsteams.util.Config;
 
 import lombok.Getter;
+import me.skymc.taboolib.cooldown.seconds.CooldownPack2;
+import me.skymc.taboolib.cooldown.seconds.CooldownUtils2;
 import me.skymc.taboolib.other.DateUtils;
 import me.skymc.taboolib.playerdata.DataUtils;
 
@@ -32,18 +35,31 @@ public class TeamDataManager {
 	private static YamlConfiguration data = new YamlConfiguration();
 	
 	@Getter
-	private static ArrayList<TeamData> teamList = new ArrayList<TeamData>();
+	private static ArrayList<TeamData> teamList = new ArrayList<>();
 	
 	@Getter
-	private static BukkitRunnable runnable = null;
-
-	// 玩家，邀请队长列表
-	@Getter
-	private static HashMap<String,List<String>> inviteMap = new HashMap<String,List<String>>();
+	private static HashMap<String, List<String>> inviteMap = new HashMap<>();
 	
-	// 队长，申请玩家列表
 	@Getter
-	private static HashMap<String,List<String>> joinMap = new HashMap<String,List<String>>();
+	private static HashMap<String, List<String>> joinMap = new HashMap<>();
+	
+	@Getter
+	private static CooldownPack2 cooldown_invite;
+	
+	@Getter
+	private static CooldownPack2 cooldown_apply;
+	
+	/**
+	 * 注册冷却
+	 */
+	public static void registerCooldown() {
+		// 注销冷却
+		CooldownUtils2.unregister("bsteams|cooldown-invite");
+		CooldownUtils2.unregister("bsteams|cooldown-apply");
+		// 注册冷却
+		CooldownUtils2.register(cooldown_invite = new CooldownPack2("bsteams|cooldown-invite", (int) DateUtils.formatDate(Config.getConfig(Config.COOLDOWN_INVITE))), BSTeamsPlugin.getInst());
+		CooldownUtils2.register(cooldown_apply = new CooldownPack2("bsteams|cooldown-apply", (int) DateUtils.formatDate(Config.getConfig(Config.COOLDOWN_APPLY))), BSTeamsPlugin.getInst());
+	}
 	
 	//获取加入列表
 	public static List<String> getjoinList(String playerName){
@@ -71,7 +87,7 @@ public class TeamDataManager {
 	static void ClearOverdueJoin(){
 		for (String key : joinMap.keySet()){
 			List<String> joinList = joinMap.get(key);
-			for (int i = joinList.size()-1;i>0;i--){
+			for (int i = joinList.size() - 1 ; i > 0 ; i--){
 				if(System.currentTimeMillis() > Long.valueOf(joinList.get(i).split(":")[1])){
 					joinList.remove(i);
 				}
@@ -83,7 +99,7 @@ public class TeamDataManager {
 	static void ClearOverdueInvite(){
 		for (String key : inviteMap.keySet()){
 			List<String> inviteList = inviteMap.get(key);
-			for (int i = inviteList.size()-1;i>0;i--){
+			for (int i = inviteList.size() - 1 ; i > 0 ; i--){
 				if(System.currentTimeMillis() > Long.valueOf(inviteList.get(i).split(":")[1])){
 					inviteList.remove(i);
 				}
@@ -148,16 +164,29 @@ public class TeamDataManager {
 		}
 		
 
-		// 清理加入、邀请过期数据
-		// 保存任务
+		// 数据保存
+		new BukkitRunnable(){
+			@Override
+			public void run() {
+				saveTeamList();
+			}
+		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 600, 600);
+		
+		// 邀请有效期检查
 		new BukkitRunnable(){
 			@Override
 			public void run() {
 				ClearOverdueInvite();
-				ClearOverdueJoin();
-				saveTeamList();
 			}
-		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 600, 600);
+		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 20, 20);
+		
+		// 申请有效期检查
+		new BukkitRunnable(){
+			@Override
+			public void run() {
+				ClearOverdueJoin();
+			}
+		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 20, 20);
 	}
 	
 	/**
@@ -245,7 +274,7 @@ public class TeamDataManager {
 		BSTeamsPlugin.getLanguage().get("Admin.DataSaved")
 			.addPlaceholder("$teams", String.valueOf(teamList.size()))
 			.addPlaceholder("$time", String.valueOf(endTimes))
-			.send(Bukkit.getConsoleSender());
+			.console();
 	}
 
 }

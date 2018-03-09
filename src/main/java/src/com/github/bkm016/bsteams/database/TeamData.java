@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
 import com.github.bkm016.bsteams.util.Config;
@@ -63,6 +64,23 @@ public class TeamData {
 	public List<String> getTeamMembersAll() {
 		List<String> list = new ArrayList<>(teamMembers);
 		list.add(teamLeader);
+		return list;
+	}
+	
+	/**
+	 * 获取所有在线成员
+	 * 
+	 * @param leader 是否获取队长
+	 * @return {@link List}
+	 */
+	public List<Player> getTeamMembersOnline(boolean leader) {
+		List<Player> list = new ArrayList<>();
+		for (String name : leader ? getTeamMembers() : getTeamMembersAll()) {
+			Player member = Bukkit.getPlayerExact(name);
+			if (member != null) {
+				list.add(member);
+			}
+		}
 		return list;
 	}
 	

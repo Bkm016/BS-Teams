@@ -1,0 +1,64 @@
+# 异步储存
+AsynchronouslySave: true
+
+# 队伍有效期
+TeamRetentionTime: 1d
+
+# 插件设置
+Settings:
+  # 队伍背包界面物品
+  page_next_arrow:
+    material: ARROW
+    name: '&f下一页'
+    lore:
+    - ''
+    - '&7点击翻页'
+    
+  # 队伍背包界面物品
+  page_back_arrow:
+    material: ARROW
+    name: '&f上一页'
+    lore:
+    - ''
+    - '&7点击翻页'
+    
+  # 队伍背包界面物品
+  note-item:
+    material: BOOK_AND_QUILL
+    name: '&f操作日志'
+    
+  # 操作记录长度
+  note-size: 10
+  
+  # 队伍人数（不含队长）
+  team-size: 5
+  
+  # 是否启用队伍聊天（无视距离限制仅限队友可见）
+  team-chat: true
+  
+  # 经验共享设置
+  share-experience:
+    # 是否启用
+    enable: false
+    # 有效半径
+    radius: 10
+  
+  # 是否启用掉落物共享
+  share-drops: false
+  
+  # 时间格式
+  date-format: yyyy-MM-dd HH:mm:ss
+  
+  # 队伍邀请
+  invite:
+    # 有效期
+    validity: 30s
+    # 指令冷却
+    cooldown: 30s
+  
+  # 队伍申请
+  apply:
+    # 有效期
+    validity: 30s
+    # 指令冷却
+    cooldown: 30s
