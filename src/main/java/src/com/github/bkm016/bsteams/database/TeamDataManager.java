@@ -3,6 +3,7 @@ package com.github.bkm016.bsteams.database;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -35,6 +36,54 @@ public class TeamDataManager {
 	
 	@Getter
 	private static BukkitRunnable runnable = null;
+
+	// 玩家，邀请队长列表
+	@Getter
+	private static HashMap<String,List<String>> inviteMap = new HashMap<String,List<String>>();
+	
+	// 队长，申请玩家列表
+	@Getter
+	private static HashMap<String,List<String>> joinMap = new HashMap<String,List<String>>();
+	
+	//获取加入列表
+	public static List<String> getjoinList(String playerName){
+		if (joinMap.containsKey(playerName)){
+			return joinMap.get(playerName);
+		}
+		return joinMap.put(playerName, new ArrayList<String>());
+	}
+	
+	//获取邀请列表
+	public static List<String> getinviteList(String playerName){
+		if (inviteMap.containsKey(playerName)){
+			return inviteMap.get(playerName);
+		}
+		return inviteMap.put(playerName, new ArrayList<String>());
+	}
+	
+	// 定时清理joinMap
+	static void ClearOverdueJoin(){
+		for (String key : joinMap.keySet()){
+			List<String> joinList = joinMap.get(key);
+			for (int i = joinList.size()-1;i>0;i--){
+				if(System.currentTimeMillis() > Long.valueOf(joinList.get(i).split(":")[1])){
+					joinList.remove(i);
+				}
+			}
+		}
+	}
+	
+	// 定时清理inviteMap
+	static void ClearOverdueInvite(){
+		for (String key : inviteMap.keySet()){
+			List<String> inviteList = inviteMap.get(key);
+			for (int i = inviteList.size()-1;i>0;i--){
+				if(System.currentTimeMillis() > Long.valueOf(inviteList.get(i).split(":")[1])){
+					inviteList.remove(i);
+				}
+			}
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	public static void loadData() {
@@ -43,10 +92,10 @@ public class TeamDataManager {
 		
 		// 检测数据库是否存在
 		if (!DATA_FILE.exists()){
-	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §c数据不存在, 开始创建...");
+	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §c数据不存在，创建数据文件");
 		}
 		else {
-			Bukkit.getConsoleSender().sendMessage("[BS-Teams] §7载入队伍数据...");
+			Bukkit.getConsoleSender().sendMessage("[BS-Teams] §7正在载入队伍数据...");
 			try {
 				data.load(DATA_FILE);
 			} 
@@ -54,12 +103,13 @@ public class TeamDataManager {
 				e.printStackTrace();
 			}
 		}
-		
+		int removeTeamSize = 0;
 		for (String teamLeader : data.getKeys(false)){
 			Long teamTimes = data.getLong(teamLeader + ".Time");
 			//当超时的时候
 			if (teamTimes + DateUtils.formatDate(Config.getConfig(Config.TEAM_RETENTION_TIME)) < System.currentTimeMillis()){
-				//TODO 删除队伍代码，测试
+				//删除队伍
+				removeTeamSize++;
 				data.set(teamLeader, null);
                 continue;
 			}
@@ -86,11 +136,19 @@ public class TeamDataManager {
 			}
 			teamList.add(teamData);
 		}
+		Bukkit.getConsoleSender().sendMessage("[BS-Teams] §7已载入 §6"+teamList.size()+" §7条队伍数据");
+		if (removeTeamSize>0){
+			Bukkit.getConsoleSender().sendMessage("[BS-Teams] §7已清除 §c"+removeTeamSize+" §7条过时队伍数据");
+		}
 		
+
+		// 清理加入、邀请过期数据
 		// 保存任务
 		new BukkitRunnable(){
 			@Override
 			public void run() {
+				ClearOverdueInvite();
+				ClearOverdueJoin();
 				saveTeamList();
 			}
 		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 600, 600);

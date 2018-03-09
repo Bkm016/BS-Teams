@@ -1,5 +1,8 @@
 package com.github.bkm016.bsteams.command;
 
+import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,6 +16,8 @@ import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
 import com.github.bkm016.bsteams.util.PlayerCommand;
+
+import me.skymc.taboolib.other.DateUtils;
 
 /**
  * @author sky
@@ -61,7 +66,7 @@ public class BSTeamsSubCommand {
 	 * @param sender
 	 * @param args
 	 */
-	@PlayerCommand(cmd = "join", arg="<Player>", type = CommandType.PLAYER)
+	@PlayerCommand(cmd = "join", arg="<Leader>", type = CommandType.PLAYER)
 	void onJoinTeamCommand(CommandSender sender, String args[]) {
 		// 不符合规范 可以添加扩展功能 - 显示目前所有在线队伍的json
 		if (args.length < 2) {
@@ -69,20 +74,69 @@ public class BSTeamsSubCommand {
 			return;
 		}
 		Player player = (Player) sender;
+		Player leaderPlayer = Bukkit.getPlayerExact(args[1]);
+		if(leaderPlayer == null){
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_LEADER_NO_ONLINE).send(sender);
+			return;
+		}
 		TeamData teamData = TeamDataManager.getTeam(args[1]);
 		// 判断队伍名是否为空或者是不是队长
-		if (teamData == null || !!teamData.getTeamLeader().equals(args[1])){
+		if (teamData == null || !teamData.getTeamLeader().equals(leaderPlayer.getName())){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
 			return;
 		}
-		// 加入队伍
-		teamData.addTeamMember(args[1]);
-		// 提示信息
-		BSTeamsPlugin.getLanguage().get(Message.PLAYER_QUIT_TEAM)
-			.addPlaceholder("$Team", args[1])
-			.send(sender);
+		// 加入数据储存
+		List<String> joinList = TeamDataManager.getjoinList(args[1]);
+		joinList.add(sender.getName()+":"+(System.currentTimeMillis()+DateUtils.formatDate("3m")));
+		// 信息发送
+		BSTeamsPlugin.getLanguage().get(Message.PLAYER_JOIN_TO_PLAYER).send(sender);
+		BSTeamsPlugin.getLanguage().get(Message.PLAYER_JOIN_TO_lEADER)
+			.addPlaceholder("$Player", player.getName())
+			.send(leaderPlayer);
 	}
-
+	
+	/**
+	 * 接受玩家邀请
+	 * 
+	 * @param sender
+	 * @param args
+	 */
+	@PlayerCommand(cmd = "accpetJoin", arg="<Player>", hide = true ,type = CommandType.TEAM_LEADER)
+	void onAccpetJoinCommand(CommandSender sender, String args[]) {
+		List<String> joinList = TeamDataManager.getjoinList(sender.getName());
+		if (args.length < 2) {
+			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+			if(joinList.size() > 0){
+				String place = "";
+				for (String playerAndTime : joinList){
+					place += playerAndTime.split(":")[0] + "  ";
+				}
+				// 可接受队伍列表消息
+				BSTeamsPlugin.getLanguage().get(Message.PLAYER_JOIN_LIST_TO_LEADER)
+					.addPlaceholder("$JoinList", place)
+					.send(sender);
+			}
+			return;
+		}
+		for (String playerAndTime : joinList){
+			// 检测邀请列表是否有这个玩家 并且检测邀请是否过期
+			if (playerAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() > Long.valueOf(playerAndTime.split(":")[1])){
+				// 接受请求 清除列表
+				joinList.clear();
+				TeamDataManager.getTeam(sender.getName()).addTeamMember(args[1]);
+				//TODO 输出消息
+				BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_lEADER)
+				.addPlaceholder("$Player", args[1]).send(sender);
+				if (Bukkit.getPlayerExact(args[1]) != null){
+					BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_PLAYER)
+						.addPlaceholder("$Player", sender.getName()).send(Bukkit.getPlayerExact(args[1]));
+				}
+				return;
+			}
+		}
+		//TODO 邀请不存在提示 sender
+		BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_ACCPET_TO_PLAYER).send(sender);
+	}
 
 	/**
 	 * 退出队伍
@@ -96,12 +150,84 @@ public class BSTeamsSubCommand {
 		TeamData teamData = TeamDataManager.getTeam(player.getName());
 		// 退出队伍
 		teamData.removeTeamMember(player.getName());
-		// 提示
+		// 提示玩家
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_QUIT_TEAM)
 			.addPlaceholder("$Team", teamData.getTeamLeader())
 			.send(sender);
+		// 提示队长
 	}
-
+	
+	/**
+	 * 邀请队员
+	 * 
+	 * @param sender
+	 * @param args
+	 */
+	@PlayerCommand(cmd = "invite", arg="<Player>", type = CommandType.TEAM_LEADER)
+	void onInviteCommand(CommandSender sender, String args[]) {
+		// 不符合规范 可以添加扩展功能 - 显示目前所有在线队伍的json
+		if (args.length < 2) {
+			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+			return;
+		}
+//		Player player = (Player) sender;
+		Player invitePlayer = Bukkit.getPlayerExact(args[1]);
+		if (invitePlayer == null){
+			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_ONLINE).send(sender);
+			return;
+		}
+		// 邀请数据储存 被邀请玩家 - 队长名 - 时间
+		List<String> inviteList = TeamDataManager.getinviteList(invitePlayer.getName());
+		inviteList.add(sender.getName()+":"+(System.currentTimeMillis()+DateUtils.formatDate("3m")));
+		// 信息发送
+		BSTeamsPlugin.getLanguage().get(Message.PLAYER_INVITE_TO_lEADER).send(sender);
+		BSTeamsPlugin.getLanguage().get(Message.PLAYER_INVITE_TO_PLAYER)
+			.addPlaceholder("$Player", sender.getName())
+			.send(invitePlayer);
+	}
+	
+	/**
+	 * 接受队伍邀请
+	 * 
+	 * @param sender
+	 * @param args
+	 */
+	@PlayerCommand(cmd = "accpet", arg="<Leader>", hide = true ,type = CommandType.PLAYER)
+	void onAccpetCommand(CommandSender sender, String args[]) {
+		List<String> inviteList = TeamDataManager.getinviteList(sender.getName());
+		if (args.length < 2) {
+			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+			if(inviteList.size() > 0){
+				String place = "";
+				for (String LeaderAndTime : inviteList){
+					place += LeaderAndTime.split(":")[0] + "  ";
+				}
+				// 可接受队伍列表消息
+				BSTeamsPlugin.getLanguage().get(Message.PLAYER_INVITE_LIST_TO_PLAYER)
+					.addPlaceholder("$InviteList", place)
+					.send(sender);
+			}
+			return;
+		}
+		for (String leaderAndTime : inviteList){
+			// 检测邀请列表是否有这个玩家 并且检测邀请是否过期
+			if (leaderAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() > Long.valueOf(leaderAndTime.split(":")[1])){
+				// 接受请求 清除列表
+				inviteList.clear();
+				TeamDataManager.getTeam(args[1]).addTeamMember(sender.getName());
+				//TODO 输出消息
+				BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_PLAYER)
+					.addPlaceholder("$Player", args[1]).send(sender);
+				if (Bukkit.getPlayerExact(args[1]) != null){
+					BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_lEADER)
+						.addPlaceholder("$Player", sender.getName()).send(Bukkit.getPlayerExact(args[1]));
+				}
+				return;
+			}
+		}
+		//TODO 邀请不存在提示 sender
+		BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_ACCPET_TO_PLAYER).send(sender);
+	}
 
 	/**
 	 * 队伍列表
