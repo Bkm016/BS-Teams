@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.database.TeamData;
+import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.spigot.book.BookFormatter;
 import com.github.bkm016.spigot.book.BookFormatter.BookBuilder;
@@ -64,6 +65,59 @@ public class BookHandler {
 		if (Config.getConfig().getBoolean(Config.SHARE_DROPS_ENABLE)) {
 			options.put("SHARE-DROPS", true);
 		}
+	}
+	
+	/**
+	 * 打开队伍列表
+	 */
+	public void openList(Player player) {
+		// 语言文件
+		Language2 lang = BSTeamsPlugin.getLanguage();
+		// 创建书本
+		BookBuilder book = BookFormatter.writtenBook();
+		
+		// page 1
+		PageBuilder page1 = new BookFormatter.PageBuilder().add(lang.get("TEAM-LIST-TITLE").asString()).endLine().newLine();
+		// 刷新
+		page1.add(lang.get("TEAM-LIST-REFRESH").asString());
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-LIST-REFRESH-BUTTON").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams list"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-LIST-REFRESH-BUTTON-TEXT").asString()))
+				.build()).endLine();
+		
+		// 队伍列表
+		int i = 1;
+		for (TeamData team : TeamDataManager.getTeamList()) {
+			// 队长离线
+			if (Bukkit.getPlayerExact(team.getTeamLeader()) == null) {
+				continue;
+			}
+			// 成员已满
+			if (team.getTeamMembers().size() >= Config.getConfig().getInt(Config.TEAM_SIZE)) {
+				continue;
+			}
+			// 队伍公开
+			if (!team.getTeamOption("PUBLIC", true)) {
+				continue;
+			}
+			// 显示信息
+			String showText = lang.get("TEAM-LIST-TEAMS")
+					.addPlaceholder("$number", String.valueOf(i))
+					.addPlaceholder("$name", team.getTeamLeader())
+					.addPlaceholder("$members", String.valueOf(team.getTeamMembers().size()))
+					.addPlaceholder("$max", String.valueOf(Config.getConfig().getInt(Config.TEAM_SIZE))).toString();
+			// 队伍信息
+			page1.add(new BookFormatter.TextBuilder(showText)
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams join " + team.getTeamLeader()))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-LIST-TEAMS-TEXT", team.getTeamLeader()).asString()))
+					.build()).endLine();
+			i++;
+		}
+		
+		// 打开界面
+		BookFormatter.forceOpen(player, book.addPages(page1.build()).build());
+		// 音效
+		player.playSound(player.getLocation(), Sound.ENTITY_HORSE_ARMOR, 1f, 1f);
 	}
 	
 	/**
