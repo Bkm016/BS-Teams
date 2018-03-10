@@ -149,8 +149,6 @@ public class BSTeamsSubCommand {
 					BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
 					return;
 				}
-				// 接受请求 清除列表
-				joinList.clear();
 				// 增加队员
 				teamData.addTeamMember(args[1]);
 				// 提示队长
