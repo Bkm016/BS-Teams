@@ -75,7 +75,7 @@ public class TeamData {
 	 */
 	public List<Player> getTeamMembersOnline(boolean leader) {
 		List<Player> list = new ArrayList<>();
-		for (String name : leader ? getTeamMembers() : getTeamMembersAll()) {
+		for (String name : leader ? getTeamMembersAll() : getTeamMembers()) {
 			Player member = Bukkit.getPlayerExact(name);
 			if (member != null) {
 				list.add(member);

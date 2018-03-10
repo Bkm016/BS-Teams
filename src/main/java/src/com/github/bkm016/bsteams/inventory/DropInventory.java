@@ -53,6 +53,10 @@ public class DropInventory {
 		if (page > 1) {
 			inventory.setItem(47, ItemUtils.loadItem(Config.getConfig(), Config.PAGE_ARROW_BACK));
 		}
+		// 队长
+		if (teamData.getTeamLeader().equals(player.getName()) || player.isOp()) {
+			inventory.setItem(4, ItemUtils.loadItem(Config.getConfig(), "Settings.clearnote-item"));
+		}
 		// 日志
 		ItemStack noteItem = ItemUtils.loadItem(Config.getConfig(), Config.NOTE_ITEM); {
 			ItemMeta meta = noteItem.getItemMeta();

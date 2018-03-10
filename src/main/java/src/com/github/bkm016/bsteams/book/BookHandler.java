@@ -68,9 +68,186 @@ public class BookHandler {
 	}
 	
 	/**
+	 * 打开玩家界面
+	 * 
+	 * @param player
+	 */
+	public void openPlayer(Player player) {
+		// 语言文件
+		Language2 lang = BSTeamsPlugin.getLanguage();
+		// 创建书本
+		BookBuilder book = BookFormatter.writtenBook();
+		
+		// page 1
+		PageBuilder page1 = new BookFormatter.PageBuilder().newLine().newLine();
+		
+		// 创建队伍
+		page1.add(lang.get("TEAM-HELP-CREATE-1").asString());
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-HELP-CREATE-2").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams create"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-HELP-CREATE-TEXT").asString()))
+				.build());
+		page1.add(lang.get("TEAM-HELP-CREATE-3").asString()).newLine().newLine();
+		
+		// 队伍邀请
+		page1.add(lang.get("TEAM-HELP-INVITE-1").asString());
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-HELP-INVITE-2").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams accept"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-HELP-INVITE-TEXT").asString()))
+				.build());
+		page1.add(lang.get("TEAM-HELP-INVITE-3").asString()).newLine().newLine();
+		
+		// 队伍列表
+		page1.add(lang.get("TEAM-HELP-LIST-1").asString());
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-HELP-LIST-2").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams list"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-HELP-LIST-TEXT").asString()))
+				.build());
+		page1.add(lang.get("TEAM-HELP-LIST-3").asString()).newLine().newLine();
+		
+		// 打开界面
+		BookFormatter.forceOpen(player, book.addPages(page1.build()).build());
+		// 音效
+		player.playSound(player.getLocation(), Sound.ENTITY_HORSE_ARMOR, 1f, 1f);
+	}
+	
+	
+	/**
+	 * 打开申请列表
+	 * 
+	 * @param player
+	 */
+	public void openApply(Player player) {
+		// 语言文件
+		Language2 lang = BSTeamsPlugin.getLanguage();
+		// 创建书本
+		BookBuilder book = BookFormatter.writtenBook();
+		
+		// page 1
+		PageBuilder page1 = new BookFormatter.PageBuilder().add(lang.get("TEAM-APPLY-TITLE").asString()).endLine().newLine();
+		
+		// 邀请列表
+		int i = 1;
+		for (String name : TeamDataManager.getjoinList(player.getName())) {
+			// 显示信息
+			String showText = lang.get("TEAM-APPLY-PLAYER")
+					.addPlaceholder("$number", String.valueOf(i))
+					.addPlaceholder("$name", name.split(":")[0]).toString();
+			// 队伍信息
+			page1.add(new BookFormatter.TextBuilder(showText)
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams acceptJoin " + name.split(":")[0]))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-APPLY-PLAYER-TEXT", name.split(":")[0]).asString()))
+					.build()).endLine();
+			i++;
+		}
+		
+		// 如果没有队伍
+		if (i == 1) {
+			page1.add(lang.get("TEAM-APPLY-EMPTY").asString()).endLine();
+		}
+		
+		// 换行
+		page1.newLine();
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-APPLY-BACK").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams info"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-APPLY-BACK-TEXT").asString()))
+				.build());
+		// 刷新
+		page1.add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-APPLY-REFRESH").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams acceptJoin"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-APPLY-REFRESH-TEXT").asString()))
+				.build());
+		
+		// 删除所有
+		if (i > 1) {
+			page1.add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-APPLY-CLEAR").asString())
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams clearjoin"))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-APPLY-CLEAR-TEXT").asString()))
+					.build()).endLine();
+		}
+		
+		// 打开界面
+		BookFormatter.forceOpen(player, book.addPages(page1.build()).build());
+		// 音效
+		player.playSound(player.getLocation(), Sound.ENTITY_HORSE_ARMOR, 1f, 1f);
+	}
+	
+	/**
+	 * 打开邀请列表
+	 * 
+	 * @param player 玩家
+	 */
+	public void openInvite(Player player) {
+		// 语言文件
+		Language2 lang = BSTeamsPlugin.getLanguage();
+		// 创建书本
+		BookBuilder book = BookFormatter.writtenBook();
+		
+		// page 1
+		PageBuilder page1 = new BookFormatter.PageBuilder().add(lang.get("TEAM-INVITE-TITLE").asString()).endLine().newLine();
+		
+		// 邀请列表
+		int i = 1;
+		for (String name : TeamDataManager.getinviteList(player.getName())) {
+			TeamData team = TeamDataManager.getTeam(name.split(":")[0]);
+			if (team == null) {
+				continue;
+			}
+			// 显示信息
+			String showText = lang.get("TEAM-INVITE-TEAMS")
+					.addPlaceholder("$number", String.valueOf(i))
+					.addPlaceholder("$name", team.getTeamLeader())
+					.addPlaceholder("$members", String.valueOf(team.getTeamMembers().size()))
+					.addPlaceholder("$max", String.valueOf(Config.getConfig().getInt(Config.TEAM_SIZE))).toString();
+			// 队伍信息
+			page1.add(new BookFormatter.TextBuilder(showText)
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams accept " + team.getTeamLeader()))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INVITE-TEAMS-TEXT", team.getTeamLeader()).asString()))
+					.build()).endLine();
+			i++;
+		}
+		
+		// 如果没有队伍
+		if (i == 1) {
+			page1.add(lang.get("TEAM-INVITE-EMPTY").asString()).endLine();
+		} 
+		
+		// 换行
+		page1.newLine();
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INVITE-BACK").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INVITE-BACK-TEXT").asString()))
+				.build());
+		// 刷新
+		page1.add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INVITE-REFRESH").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams accept"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INVITE-REFRESH-TEXT").asString()))
+				.build());
+		
+		// 删除所有
+		if (i > 1) {
+			page1.add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INVITE-CLEAR").asString())
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams clearinvite"))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INVITE-CLEAR-TEXT").asString()))
+					.build()).endLine();
+		}
+		
+		// 打开界面
+		BookFormatter.forceOpen(player, book.addPages(page1.build()).build());
+		// 音效
+		player.playSound(player.getLocation(), Sound.ENTITY_HORSE_ARMOR, 1f, 1f);
+	}
+	
+	/**
 	 * 打开队伍列表
 	 */
 	public void openList(Player player) {
+		// 是否有队伍
+		boolean isFormTeam = TeamDataManager.getTeam(player.getName()) != null;
 		// 语言文件
 		Language2 lang = BSTeamsPlugin.getLanguage();
 		// 创建书本
@@ -78,12 +255,6 @@ public class BookHandler {
 		
 		// page 1
 		PageBuilder page1 = new BookFormatter.PageBuilder().add(lang.get("TEAM-LIST-TITLE").asString()).endLine().newLine();
-		// 刷新
-		page1.add(lang.get("TEAM-LIST-REFRESH").asString());
-		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-LIST-REFRESH-BUTTON").asString())
-				.onClick(BookFormatter.ClickAction.runCommand("/bsteams list"))
-				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-LIST-REFRESH-BUTTON-TEXT").asString()))
-				.build()).endLine();
 		
 		// 队伍列表
 		int i = 1;
@@ -107,12 +278,34 @@ public class BookHandler {
 					.addPlaceholder("$members", String.valueOf(team.getTeamMembers().size()))
 					.addPlaceholder("$max", String.valueOf(Config.getConfig().getInt(Config.TEAM_SIZE))).toString();
 			// 队伍信息
-			page1.add(new BookFormatter.TextBuilder(showText)
-					.onClick(BookFormatter.ClickAction.runCommand("/bsteams join " + team.getTeamLeader()))
-					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-LIST-TEAMS-TEXT", team.getTeamLeader()).asString()))
-					.build()).endLine();
+			if (!isFormTeam) {
+				page1.add(new BookFormatter.TextBuilder(showText)
+						.onClick(BookFormatter.ClickAction.runCommand("/bsteams join " + team.getTeamLeader()))
+						.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-LIST-TEAMS-TEXT", team.getTeamLeader()).asString()))
+						.build()).endLine();
+			} else {
+				page1.add(showText).endLine();
+			}
 			i++;
 		}
+		// 如果没有队伍
+		if (i == 1) {
+			page1.add(lang.get("TEAM-LIST-EMPTY").asString()).endLine();
+		}
+		
+		
+		// 换行
+		page1.newLine();
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-LIST-BACK").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-LIST-BACK-TEXT").asString()))
+				.build());
+		// 刷新
+		page1.add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+		page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-LIST-REFRESH").asString())
+				.onClick(BookFormatter.ClickAction.runCommand("/bsteams list"))
+				.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-LIST-REFRESH-TEXT").asString()))
+				.build());
 		
 		// 打开界面
 		BookFormatter.forceOpen(player, book.addPages(page1.build()).build());
@@ -127,7 +320,7 @@ public class BookHandler {
 	 */
 	public void openInfo(Player player, TeamData teamData) {
 		// 是否为队长
-		boolean isLeader = teamData.getTeamLeader().equals(player.getName()) || player.isOp();
+		boolean isLeader = teamData.getTeamLeader().equals(player.getName());
 		// 语言文件
 		Language2 lang = BSTeamsPlugin.getLanguage();
 		// 创建书本
@@ -202,12 +395,18 @@ public class BookHandler {
 		// 是否启用队伍背包
 		if (teamData.getTeamOption("SHARE-DROPS", true)) {
 			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-INVENTORY").asString())
-					.onClick(BookFormatter.ClickAction.runCommand("/bsteams open"))
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams open " + teamData.getTeamLeader()))
 					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INFO-BUTTON-INVENTORY-TEXT").asString()))
 					.build()).add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
 		}
-		// 解散队伍
+		// 如果是队长
 		if (isLeader) {
+			// 队伍申请
+			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-APPLY").asString())
+					.onClick(BookFormatter.ClickAction.runCommand("/bsteams acceptJoin"))
+					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INFO-BUTTON-APPLY-TEXT").asString()))
+					.build()).add(lang.get("TEAM-INFO-BUTTON-SPLIT").asString());
+			// 解散队伍
 			page1.add(new BookFormatter.TextBuilder(lang.get("TEAM-INFO-BUTTON-DISSOLVE").asString())
 					.onClick(BookFormatter.ClickAction.runCommand("/bsteams dissolve"))
 					.onHover(BookFormatter.HoverAction.showText(lang.get("TEAM-INFO-BUTTON-DISSOLVE-TEXT").asString()))

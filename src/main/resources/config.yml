@@ -4,8 +4,15 @@ AsynchronouslySave: true
 # 队伍有效期
 TeamRetentionTime: 1d
 
+# 玩家页面
+
 # 插件设置
 Settings:
+  # 队伍背包界面物品
+  note-item:
+    material: BOOK_AND_QUILL
+    name: '&f操作日志'
+    
   # 队伍背包界面物品
   page_next_arrow:
     material: ARROW
@@ -23,9 +30,19 @@ Settings:
     - '&7点击翻页'
     
   # 队伍背包界面物品
-  note-item:
-    material: BOOK_AND_QUILL
-    name: '&f操作日志'
+  clearnote-item:
+    bukkit:
+      ==: org.bukkit.inventory.ItemStack
+      type: SKULL_ITEM
+      damage: 3
+      meta:
+        ==: ItemMeta
+        meta-type: SKULL
+        display-name: §f清除日志
+        lore:
+        - §f
+        - §7点击清除操作日志
+        internal: H4sIAAAAAAAAAE2OTW6DMBhEv1aqRFGP0S2ScfgJiyyqBhpHAUpiIHiHwSgQm0YJRKWn6hHLsrsZzXvS6AA6vBzOo5Sf16+mlUKDR1LDK3IryxLYMviysQ2Le5XBRdMYJZ9zyZdW7bk66LN0EdehFbdn0AbxPYxXcdMB4EGDp6yUo4BfMW0RO55QfdzKaiLO3OkByZh0F5f02cTfiUPUvG/enN3k/WPtocxtWSy2J9YnI1cZ2i32Umz2ZqXSO6O1ivMQM5WpUAXnmLI2xL4ZrQsz6pKpUL4d0QRHP0HLaNBF6xSFOJ0YJSajKS7y2fvwUYQTk3WBIr3pNclqNb+HP8/wyxUYAQAA
     
   # 操作记录长度
   note-size: 10
@@ -39,12 +56,12 @@ Settings:
   # 经验共享设置
   share-experience:
     # 是否启用
-    enable: false
+    enable: true
     # 有效半径
     radius: 10
   
   # 是否启用掉落物共享
-  share-drops: false
+  share-drops: true
   
   # 时间格式
   date-format: yyyy-MM-dd HH:mm:ss

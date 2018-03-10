@@ -9,12 +9,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.BSTeamsPlugin;
+import com.github.bkm016.bsteams.book.BookHandler;
 import com.github.bkm016.bsteams.command.enums.CommandType;
 import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.database.TeamData;
@@ -51,32 +53,42 @@ public class BSTeamsCommand implements CommandExecutor {
 			}
 		}
     	
-        // 如果没有参数
-        if (args.length == 0) {
-			// 帮助
-        	BSTeamsPlugin.getLanguage().get("Command.title").send(sender);
-        	for (Method method : BSTeamsSubCommand.class.getDeclaredMethods()) {
-        		if (method.isAnnotationPresent(PlayerCommand.class)){
-        			PlayerCommand sub = method.getAnnotation(PlayerCommand.class);
-        			/*
-        			 * 判断各项条件:
-        			 * 
-        			 * 1. 指令目标
-        			 * 2. 指令是否隐藏
-        			 * 3. 指令权限
-        			 */
-        			if (!contains(sub.type(), type) || sub.hide() || !sender.hasPermission(sub.permission())){
-        				continue;
-        			}
-        			// 帮助
-    				BSTeamsPlugin.getLanguage().get("Command.label")
-    					.addPlaceholder("$command", label + " " + sub.cmd() + " " + sub.arg())
-    					.addPlaceholder("$desc", BSTeamsPlugin.getLanguage().get("Command." + sub.cmd()).asString())
-    					.send(sender);
-                }
+    	if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
+    		if (sender instanceof ConsoleCommandSender || (args.length > 0 && args[0].equalsIgnoreCase("help"))) {
+    			// 帮助
+            	BSTeamsPlugin.getLanguage().get("Command.title").send(sender);
+            	for (Method method : BSTeamsSubCommand.class.getDeclaredMethods()) {
+            		if (method.isAnnotationPresent(PlayerCommand.class)){
+            			PlayerCommand sub = method.getAnnotation(PlayerCommand.class);
+            			/*
+            			 * 判断各项条件:
+            			 * 
+            			 * 1. 指令目标
+            			 * 2. 指令是否隐藏
+            			 * 3. 指令权限
+            			 */
+            			if (!contains(sub.type(), type) || sub.hide() || !sender.hasPermission(sub.permission())){
+            				continue;
+            			}
+            			// 帮助
+        				BSTeamsPlugin.getLanguage().get("Command.label")
+        					.addPlaceholder("$command", label + " " + sub.cmd() + " " + sub.arg())
+        					.addPlaceholder("$desc", BSTeamsPlugin.getLanguage().get("Command." + sub.cmd()).asString())
+        					.send(sender);
+                    }
+            	}
         	}
-        	return true;
-        }
+        	else {
+        		// 获取队伍信息
+        		TeamData data = TeamDataManager.getTeam(sender.getName());
+        		if (data == null) {
+        			BSTeamsPlugin.getLanguage().get("TEMA-HELP").send((Player) sender);
+        		} else {
+        			BookHandler.getInst().openInfo((Player) sender, data);
+        		}
+        	}
+    		return true;
+    	}
         else {
         	// 获取指令
         	for (Method method : BSTeamsSubCommand.class.getDeclaredMethods()){
@@ -112,7 +124,7 @@ public class BSTeamsCommand implements CommandExecutor {
 	 * @param type2 条件2
 	 * @return boolean
 	 */
-	private boolean contains(CommandType[] type1, CommandType type2) {
+	public static boolean contains(CommandType[] type1, CommandType type2) {
 		for (int i = 0 ; i < type1.length ; i++) {
 			if (type1[i].equals(CommandType.ALL) || type1[i].equals(type2)) {
 				return true;

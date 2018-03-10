@@ -1,5 +1,6 @@
 package com.github.bkm016.bsteams.command;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -33,10 +34,10 @@ public class BSTeamsSubCommand {
 	 */
 	@PlayerCommand(cmd = "create", type = CommandType.PLAYER)
 	void onCreateTeamCommand(CommandSender sender,String args[]) {
-		// 创建队伍
-		TeamDataManager.createTeam((Player) sender);
 		// 提示信息
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_CREATE_TEAM).send(sender);
+		// 打开界面
+		BookHandler.getInst().openInfo((Player) sender, TeamDataManager.createTeam((Player) sender));
 	}
 
 	/**
@@ -81,18 +82,18 @@ public class BSTeamsSubCommand {
 		}
 		TeamData teamData = TeamDataManager.getTeam(args[1]);
 		// 判断队伍名是否为空或者是不是队长
-		if (teamData == null || !teamData.getTeamLeader().equals(leaderPlayer.getName())){
+		if (teamData == null || !teamData.getTeamLeader().equals(leaderPlayer.getName()) || !teamData.getTeamOption("PUBLIC", true)){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
 			return;
 		}
-		// 判断是否满人
-		if (teamData.getTeamMembers().size() >= Integer.valueOf(Config.getConfig(Config.TEAM_SIZE))){
-			BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
+		// 判断冷却
+		if (TeamDataManager.getCooldown_apply().isCooldown(sender.getName(), 0)) {
+			BSTeamsPlugin.getLanguage().get("Player.CooldownJoin").send(player);
 			return;
 		}
 		// 加入数据储存
 		List<String> joinList = TeamDataManager.getjoinList(args[1]);
-		if (joinList.size()>0){
+		if (joinList.size() > 0){
 			//清除上次的申请记录
 			for(int i = joinList.size() - 1 ; i >= 0 ; i--) {
 				String playerAndTime = joinList.get(i);
@@ -113,7 +114,31 @@ public class BSTeamsSubCommand {
 	}
 	
 	/**
-	 * 接受玩家邀请
+	 * 清除玩家申请
+	 * 
+	 * @param sender
+	 * @param args
+	 */
+	@PlayerCommand(cmd = "clearjoin", hide = true, type = CommandType.TEAM_LEADER)
+	void onCleraJoinCommand(CommandSender sender, String[] args) {
+		TeamDataManager.getJoinMap().remove(sender.getName());
+		BSTeamsPlugin.getLanguage().get("Player.ClearJoin").send(sender);
+	}
+	
+	/**
+	 * 清除队伍邀请
+	 * 
+	 * @param sender
+	 * @param args
+	 */
+	@PlayerCommand(cmd = "clearinvite", hide = true, type = CommandType.PLAYER)
+	void onCleraInviteCommand(CommandSender sender, String[] args) {
+		TeamDataManager.getInviteMap().remove(sender.getName());
+		BSTeamsPlugin.getLanguage().get("Player.ClearInvite").send(sender);
+	}
+	
+	/**
+	 * 接受玩家申请
 	 * 
 	 * @param sender
 	 * @param args
@@ -122,35 +147,27 @@ public class BSTeamsSubCommand {
 	void onAccpetJoinCommand(CommandSender sender, String args[]) {
 		List<String> joinList = TeamDataManager.getjoinList(sender.getName());
 		if (args.length < 2) {
-			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
-			if (joinList.size() > 0){
-				String place = "";
-				for (String playerAndTime : joinList){
-					place += playerAndTime.split(":")[0] + "  ";
-				}
-				// 可接受队伍列表消息
-				BSTeamsPlugin.getLanguage().get(Message.PLAYER_JOIN_LIST_TO_LEADER)
-					.addPlaceholder("$JoinList", place)
-					.send(sender);
-			}
+//			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+//			if (joinList.size() > 0){
+//				String place = "";
+//				for (String playerAndTime : joinList){
+//					place += playerAndTime.split(":")[0] + "  ";
+//				}
+//				// 可接受队伍列表消息
+//				BSTeamsPlugin.getLanguage().get(Message.PLAYER_JOIN_LIST_TO_LEADER)
+//					.addPlaceholder("$JoinList", place)
+//					.send(sender);
+//			}
+			// 打开界面
+			BookHandler.getInst().openApply((Player) sender);
 			return;
 		}
 		for (String playerAndTime : joinList) {
 			// 检测邀请列表是否有这个玩家 并且检测邀请是否过期
 			if (playerAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() < Long.valueOf(playerAndTime.split(":")[1])){
-				TeamData teamData = TeamDataManager.getTeam(sender.getName());
-				// 判断是否被解散
-				if (teamData == null){
-					BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(sender);
-					return;
-				}
-				// 判断是否满人
-				if (teamData.getTeamMembers().size() >= Integer.valueOf(Config.getConfig(Config.TEAM_SIZE))){
-					BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
-					return;
-				}
-				// 增加队员
-				teamData.addTeamMember(args[1]);
+				// 接受请求 清除列表
+				joinList.clear();
+				TeamDataManager.getTeam(sender.getName()).addTeamMember(args[1]);
 				// 提示队长
 				BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_lEADER)
 					.addPlaceholder("$Player", args[1]).send(sender);
@@ -167,7 +184,7 @@ public class BSTeamsSubCommand {
 	}
 
 	/**
-	 * 踢出队伍
+	 * 退出队伍
 	 * 
 	 * @param sender
 	 * @param args
@@ -181,8 +198,8 @@ public class BSTeamsSubCommand {
 		TeamData teamData = TeamDataManager.getTeam(sender.getName());
 		// 玩家不在队伍里
 		if (!teamData.getTeamMembers().contains(args[1])){
-			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT)
-				.addPlaceholder("Player.KickNotfound", args[1])
+			BSTeamsPlugin.getLanguage().get("Player.KickNotfound")
+				.addPlaceholder("$name", args[1])
 				.send(sender);
 		}
 		else {
@@ -197,7 +214,7 @@ public class BSTeamsSubCommand {
 				if (!member.equals(kickPlayer)) {
 					// 提示玩家
 					BSTeamsPlugin.getLanguage().get("Player.KickMemberNotify")
-						.addPlaceholder("$Player", kickPlayer.getName())
+						.addPlaceholder("$name", kickPlayer.getName())
 						.send(member);
 				}
 			}
@@ -251,11 +268,6 @@ public class BSTeamsSubCommand {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_ONLINE).send(sender);
 			return;
 		}
-		// 识别队伍是否满人
-		if (TeamDataManager.getTeam(sender.getName()).getTeamMembers().size() >= Integer.valueOf(Config.getConfig(Config.TEAM_SIZE))){
-			BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
-			return;
-		}
 		// 识别玩家是否已经在队伍里
 		if (TeamDataManager.getTeam(invitePlayer.getName()) != null){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_PLAYER_HAS_TEAM)
@@ -263,11 +275,16 @@ public class BSTeamsSubCommand {
 				.send(sender);
 			return;
 		}
+		// 判断冷却
+		if (TeamDataManager.getCooldown_invite().isCooldown(sender.getName(), 0)) {
+			BSTeamsPlugin.getLanguage().get("Player.CooldownInvite").send(sender);
+			return;
+		}
 		// 邀请数据储存 被邀请玩家 - 队长名 - 时间
 		List<String> inviteList = TeamDataManager.getinviteList(invitePlayer.getName());
 		if (inviteList.size()>0){
 			//清除上次的申请记录
-			for(int i=inviteList.size()-1;i>=0;i--){
+			for(int i = inviteList.size() - 1 ; i >= 0 ; i--){
 				String leaderAndTime = inviteList.get(i);
 				if (leaderAndTime.contains(sender.getName())){
 					inviteList.remove(i);
@@ -295,37 +312,27 @@ public class BSTeamsSubCommand {
 	void onAccpetCommand(CommandSender sender, String args[]) {
 		List<String> inviteList = TeamDataManager.getinviteList(sender.getName());
 		if (args.length < 2) {
-			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
-			if (inviteList.size() > 0){
-				String place = "";
-				for (String leaderAndTime : inviteList){
-					place += leaderAndTime.split(":")[0] + "  ";
-				}
-				// 可接受队伍列表消息
-				BSTeamsPlugin.getLanguage().get(Message.PLAYER_INVITE_LIST_TO_PLAYER)
-					.addPlaceholder("$InviteList", place)
-					.send(sender);
-			}
+//			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+//			if (inviteList.size() > 0){
+//				String place = "";
+//				for (String leaderAndTime : inviteList){
+//					place += leaderAndTime.split(":")[0] + "  ";
+//				}
+//				// 可接受队伍列表消息
+//				BSTeamsPlugin.getLanguage().get(Message.PLAYER_INVITE_LIST_TO_PLAYER)
+//					.addPlaceholder("$InviteList", place)
+//					.send(sender);
+//			}
+			// 打开界面
+			BookHandler.getInst().openInvite((Player) sender);
 			return;
 		}
 		for (String leaderAndTime : inviteList){
 			// 检测邀请列表是否有这个玩家 并且检测邀请是否过期
 			if (leaderAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() < Long.valueOf(leaderAndTime.split(":")[1])){
-				TeamData teamData = TeamDataManager.getTeam(args[1]);
-				// 判断是否被解散
-				if (teamData == null){
-					BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(sender);
-					return;
-				}
-				// 识别队伍是否满人
-				if (teamData.getTeamMembers().size() >= Integer.valueOf(Config.getConfig(Config.TEAM_SIZE))){
-					BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
-					return;
-				}
 				// 接受请求 清除列表
 				inviteList.clear();
-				// 增加队员
-				teamData.addTeamMember(sender.getName());
+				TeamDataManager.getTeam(args[1]).addTeamMember(sender.getName());
 				// 输出消息
 				BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_PLAYER)
 					.addPlaceholder("$Player", args[1]).send(sender);
@@ -347,11 +354,16 @@ public class BSTeamsSubCommand {
 	 * @param args
 	 */
 	@PlayerCommand(cmd = "list")
-	void onListTeamCommand(CommandSender sender,String args[]){
-		int i=0;
-		for (TeamData teamData: TeamDataManager.getTeamList()){
-			i++;
-			sender.sendMessage(i+"."+teamData.getTeamLeader() + "  人数: "+(teamData.getTeamMembers().size()+1)+"人");
+	void onListTeamCommand(CommandSender sender,String args[]) {
+		if (sender instanceof Player) {
+			BookHandler.getInst().openList((Player) sender);
+		}
+		else {
+			int i=0;
+			for (TeamData teamData: TeamDataManager.getTeamList()){
+				i++;
+				sender.sendMessage(i+"."+teamData.getTeamLeader() + "  人数: "+(teamData.getTeamMembers().size()+1)+"人");
+			}
 		}
 	}
 	
@@ -362,9 +374,9 @@ public class BSTeamsSubCommand {
 	 * @param args
 	 */
 	@PlayerCommand(cmd = "open", type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
-	void onOpenCommand(CommandSender sender,String args[]){
-		TeamData teamData = TeamDataManager.getTeam(sender.getName());
-		if (!teamData.getTeamOption("SHARE-DROPS", true)) {
+	void onOpenCommand(CommandSender sender, String args[]){
+		TeamData teamData = TeamDataManager.getTeam(args.length > 1 && sender.isOp() ? args[1] : sender.getName());
+		if (teamData == null || !teamData.getTeamOption("SHARE-DROPS", true)) {
 			return;
 		}
 		// 打开背包
@@ -382,7 +394,11 @@ public class BSTeamsSubCommand {
 	@PlayerCommand(cmd = "clearnote", hide = true, type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
 	void clearNoteCommand(CommandSender sender, String args[]) {
 		// 清除日志
-		TeamDataManager.getTeam(sender.getName()).getItemNotes().clear();
+		TeamData teamData = TeamDataManager.getTeam(args.length > 1 && sender.isOp() ? args[1] : sender.getName());
+		if (teamData == null) {
+			return;
+		}
+		teamData.getItemNotes().clear();
 		// 提示信息
 		BSTeamsPlugin.getLanguage().get("Command.clearnote").send(sender);
 	}
@@ -454,6 +470,8 @@ public class BSTeamsSubCommand {
 				// 音效
 				player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
 			}
+			// 重新打开界面
+			BookHandler.getInst().openInfo(player, teamData);
 		}
 	}
 }

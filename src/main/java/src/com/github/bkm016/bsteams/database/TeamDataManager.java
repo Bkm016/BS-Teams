@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -38,10 +40,10 @@ public class TeamDataManager {
 	private static ArrayList<TeamData> teamList = new ArrayList<>();
 	
 	@Getter
-	private static HashMap<String, List<String>> inviteMap = new HashMap<>();
+	private static ConcurrentHashMap<String, List<String>> inviteMap = new ConcurrentHashMap<>();
 	
 	@Getter
-	private static HashMap<String, List<String>> joinMap = new HashMap<>();
+	private static ConcurrentHashMap<String, List<String>> joinMap = new ConcurrentHashMap<>();
 	
 	@Getter
 	private static CooldownPack2 cooldown_invite;
@@ -63,7 +65,7 @@ public class TeamDataManager {
 	
 	//获取加入列表
 	public static List<String> getjoinList(String playerName){
-		List<String> joinList = new ArrayList<String>();
+		List<String> joinList = new CopyOnWriteArrayList<>();
 		if (joinMap.containsKey(playerName)){
 			return joinMap.get(playerName);
 		}else{
@@ -74,11 +76,11 @@ public class TeamDataManager {
 	
 	//获取邀请列表
 	public static List<String> getinviteList(String playerName){
-		List<String> inviteList = new ArrayList<String>();
+		List<String> inviteList = new CopyOnWriteArrayList<String>();
 		if (inviteMap.containsKey(playerName)){
 			return inviteMap.get(playerName);
 		}else{
-			inviteMap.put(playerName, new ArrayList<String>());
+			inviteMap.put(playerName, inviteList);
 		}
 		return inviteList;
 	}
@@ -87,10 +89,14 @@ public class TeamDataManager {
 	static void ClearOverdueJoin(){
 		for (String key : joinMap.keySet()){
 			List<String> joinList = joinMap.get(key);
-			for (int i = joinList.size() - 1 ; i > 0 ; i--){
-				if(System.currentTimeMillis() > Long.valueOf(joinList.get(i).split(":")[1])){
-					joinList.remove(i);
+			for (String name : joinList) {
+				if (System.currentTimeMillis() > Long.valueOf(name.split(":")[1])){
+					joinList.remove(name);
 				}
+			}
+			// 删除数据
+			if (joinList.size() == 0) {
+				joinMap.remove(key);
 			}
 		}
 	}
@@ -99,10 +105,14 @@ public class TeamDataManager {
 	static void ClearOverdueInvite(){
 		for (String key : inviteMap.keySet()){
 			List<String> inviteList = inviteMap.get(key);
-			for (int i = inviteList.size() - 1 ; i > 0 ; i--){
-				if(System.currentTimeMillis() > Long.valueOf(inviteList.get(i).split(":")[1])){
-					inviteList.remove(i);
+			for (String name : inviteList) {
+				if (System.currentTimeMillis() > Long.valueOf(name.split(":")[1])){
+					inviteList.remove(name);
 				}
+			}
+			// 删除数据
+			if (inviteList.size() == 0) {
+				inviteList.remove(key);
 			}
 		}
 	}
@@ -194,8 +204,10 @@ public class TeamDataManager {
 	 * 
 	 * @param player 玩家
 	 */
-	public static void createTeam(Player player){
-		teamList.add(new TeamData(player.getName(), null, null, null));
+	public static TeamData createTeam(Player player){
+		TeamData data = new TeamData(player.getName(), null, null, null);
+		teamList.add(data);
+		return data;
 	}
 	
 	/**
@@ -240,11 +252,7 @@ public class TeamDataManager {
 	public static void saveTeamList(){
 		Long oldTimes = System.nanoTime();
 		// 清空数据
-		try {
-			data.loadFromString("");
-		} catch (InvalidConfigurationException e) {
-			// TODO Auto-generated catch block
-		}
+		data = new YamlConfiguration();
 		// 遍历队伍
 		for (TeamData teamData : teamList){
 			String teamLeader = teamData.getTeamLeader();

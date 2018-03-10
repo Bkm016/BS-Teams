@@ -44,8 +44,14 @@ public class ListenerInventoryClick implements Listener {
 			if (e.getRawSlot() < 0 || e.getRawSlot() >= e.getInventory().getSize() || ItemUtils.isNull(e.getCurrentItem())) {
 				return;
 			}
+			// 清除日志
+			if (e.getRawSlot() == 4) {
+				player.chat("/bsteams clearnote " + holder.getTeamData().getTeamLeader());
+				// 刷新界面
+				holder.getTeamData().updateInventory();
+			}
 			// 下一页
-			if (e.getRawSlot() == 51) {
+			else if (e.getRawSlot() == 51) {
 				DropInventory.openInventory(player, holder.getPage() + 1, holder.getTeamData());
 			}
 			// 上一页
