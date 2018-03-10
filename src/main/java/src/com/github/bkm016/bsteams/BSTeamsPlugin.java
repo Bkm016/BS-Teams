@@ -50,8 +50,6 @@ public class BSTeamsPlugin extends JavaPlugin {
 		Config.loadConfig();
 		// 载入数据
 		TeamDataManager.loadData();
-		// 注册冷却
-		TeamDataManager.registerCooldown();
 		
 		// 监听器
 		Bukkit.getPluginManager().registerEvents(new ListenerPlayerItem(), this);
@@ -76,9 +74,7 @@ public class BSTeamsPlugin extends JavaPlugin {
 				player.closeInventory();
 			}
 		}
-		// 保存数据
+		//保存数据
 		TeamDataManager.saveTeamList();
-		// 停止任务
-		Bukkit.getScheduler().cancelTasks(this);
 	}
 }

@@ -22,6 +22,7 @@ public class Message {
 	public static final String PLAYER_NO_HAS_TEAM = "Player.NoHasTeam";
 	public static final String PLAYER_NO_TEAM_LEADER = "Player.NoTeamLeader";
 	public static final String PLAYER_NO_TEAM_MEMBER = "Player.NoTeamMember";
+	public static final String PLAYER_TEAM_MEMBER_SIZE_MAX = "Player.TeamMemberSizeMax";
 	public static final String PLAYER_HAS_TEAM_ITEMS= "Player.HasTeamItems";
 	public static final String PLAYER_INVITE_TO_lEADER= "Player.InviteToLeader";
 	public static final String PLAYER_INVITE_TO_PLAYER= "Player.InviteToPlayer";

@@ -38,17 +38,17 @@ Inventory:
 # 玩家消息
 Player:
   CreateTeam: '&8[&3队伍&8] &2你成功创建了一个队伍!'
-  QuitTeam: '&8[&3队伍&8] &c你退出了 &4$Team &c的队伍!'
-  QuitTeamMember: '&8[&3队伍&8] &c成员 &4$player &c离开了你的队伍!'
+  QuitTeam: '&8[&3队伍&8] &c你退出了 &6$Team &c的队伍!'
   JoinTeam: '&8[&3队伍&8] &7你加入了 &f$Team &7的队伍!'
   RemoveTeam: '&8[&3队伍&8] &c你解散了队伍!'
   HasTeam: '&8[&3队伍&8] &c你已经存在一个队伍里了!'
   PlayerHasTeam: '&8[&3队伍&8] &c$Player 已经存在一个队伍里了!'
   NoHasTeam: '&8[&3队伍&8] &c你没有队伍!'
-  NoTeam: '&8[&3队伍&8] &c队伍不存在!'
+  NoTeam: '&8[&3队伍&8] &c队伍不存在或已解散!'
   LeaderNoOnline: '&8[&3队伍&8] &c队长不在线!'
   NoTeamLeader: '&8[&3队伍&8] &c你不是队长!'
   NoTeamMember: '&8[&3队伍&8] &c你不是队员!'
+  TeamMemberSizeMax: '&8[&3队伍&8] &c队伍已经满人了!'
   HasTeamItems: '&8[&3队伍&8] &c请将掉落物分配背包内的物品清空!再解散队伍!'
   InviteToLeader: '&8[&3队伍&8] &7邀请请求已发送!'
   InviteToPlayer: '&8[&3队伍&8] &f$Player &7向你发出队伍邀请,接受请输入 &f/bst accept $Player'
@@ -59,9 +59,6 @@ Player:
   AccpetToLeader: '&8[&3队伍&8] &7玩家 &a$Player &7加入了你的队伍!'
   AccpetToPlayer: '&8[&3队伍&8] &7你加入了 &a$Player &7的队伍!'
   NoAccpetToPlayer: '&8[&3队伍&8] &c邀请请求不存在或已过时!'
-  KickNotfound: '&8[&3队伍&8] &c成员 &4$name &4不存在!'
-  KickMemberNotify: '&8[&3队伍&8] &c成员 &4$name &4已被移除队伍'
-  KickMemberPlayer: '&8[&3队伍&8] &c你已被移出队伍!'
   
 # 队伍信息
 TEAM-INFO-TITLE: '      < &l队伍信息 &r>'

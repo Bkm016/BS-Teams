@@ -85,6 +85,11 @@ public class BSTeamsSubCommand {
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
 			return;
 		}
+		// 判断是否满人
+		if (teamData.getTeamMembers().size() >= Integer.valueOf(Config.getConfig(Config.TEAM_SIZE))){
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
+			return;
+		}
 		// 加入数据储存
 		List<String> joinList = TeamDataManager.getjoinList(args[1]);
 		if (joinList.size()>0){
@@ -133,9 +138,21 @@ public class BSTeamsSubCommand {
 		for (String playerAndTime : joinList) {
 			// 检测邀请列表是否有这个玩家 并且检测邀请是否过期
 			if (playerAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() < Long.valueOf(playerAndTime.split(":")[1])){
+				TeamData teamData = TeamDataManager.getTeam(sender.getName());
+				// 判断是否被解散
+				if (teamData == null){
+					BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(sender);
+					return;
+				}
+				// 判断是否满人
+				if (teamData.getTeamMembers().size() >= Integer.valueOf(Config.getConfig(Config.TEAM_SIZE))){
+					BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
+					return;
+				}
 				// 接受请求 清除列表
 				joinList.clear();
-				TeamDataManager.getTeam(sender.getName()).addTeamMember(args[1]);
+				// 增加队员
+				teamData.addTeamMember(args[1]);
 				// 提示队长
 				BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_lEADER)
 					.addPlaceholder("$Player", args[1]).send(sender);
@@ -152,7 +169,7 @@ public class BSTeamsSubCommand {
 	}
 
 	/**
-	 * 退出队伍
+	 * 踢出队伍
 	 * 
 	 * @param sender
 	 * @param args
@@ -236,6 +253,11 @@ public class BSTeamsSubCommand {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_ONLINE).send(sender);
 			return;
 		}
+		// 识别队伍是否满人
+		if (TeamDataManager.getTeam(sender.getName()).getTeamMembers().size() >= Integer.valueOf(Config.getConfig(Config.TEAM_SIZE))){
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
+			return;
+		}
 		// 识别玩家是否已经在队伍里
 		if (TeamDataManager.getTeam(invitePlayer.getName()) != null){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_PLAYER_HAS_TEAM)
@@ -291,9 +313,21 @@ public class BSTeamsSubCommand {
 		for (String leaderAndTime : inviteList){
 			// 检测邀请列表是否有这个玩家 并且检测邀请是否过期
 			if (leaderAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() < Long.valueOf(leaderAndTime.split(":")[1])){
+				TeamData teamData = TeamDataManager.getTeam(args[1]);
+				// 判断是否被解散
+				if (teamData == null){
+					BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(sender);
+					return;
+				}
+				// 识别队伍是否满人
+				if (teamData.getTeamMembers().size() >= Integer.valueOf(Config.getConfig(Config.TEAM_SIZE))){
+					BSTeamsPlugin.getLanguage().get(Message.PLAYER_TEAM_MEMBER_SIZE_MAX).send(sender);
+					return;
+				}
 				// 接受请求 清除列表
 				inviteList.clear();
-				TeamDataManager.getTeam(args[1]).addTeamMember(sender.getName());
+				// 增加队员
+				teamData.addTeamMember(sender.getName());
 				// 输出消息
 				BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_PLAYER)
 					.addPlaceholder("$Player", args[1]).send(sender);
