@@ -43,6 +43,7 @@ Player:
   JoinTeam: '&8[&3队伍&8] &7你加入了 &f$Team &7的队伍!'
   RemoveTeam: '&8[&3队伍&8] &c你解散了队伍!'
   HasTeam: '&8[&3队伍&8] &c你已经存在一个队伍里了!'
+  PrivateTeam: '&8[&3队伍&8] &c队伍不开放!'
   PlayerHasTeam: '&8[&3队伍&8] &c$Player &4已经在一个队伍中了!'
   NoHasTeam: '&8[&3队伍&8] &c你没有队伍!'
   NoTeam: '&8[&3队伍&8] &c队伍不存在!'

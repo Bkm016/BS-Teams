@@ -86,6 +86,11 @@ public class BSTeamsSubCommand {
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
 			return;
 		}
+		// 判断队伍是否公开
+		if (!teamData.getTeamOption("PUBLIC",false)){
+			BSTeamsPlugin.getLanguage().get(Message.PLAYER_PRIVATE_TEAM).send(sender);
+			return;
+		}
 		// 判断冷却
 		if (TeamDataManager.getCooldown_apply().isCooldown(sender.getName(), 0)) {
 			BSTeamsPlugin.getLanguage().get("Player.CooldownJoin").send(player);
