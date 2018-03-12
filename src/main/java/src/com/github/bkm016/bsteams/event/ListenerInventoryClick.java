@@ -1,6 +1,8 @@
 package com.github.bkm016.bsteams.event;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -13,12 +15,15 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.database.TeamDataManager;
+import com.github.bkm016.bsteams.database.NoteData;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
+import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
 
 import me.skymc.taboolib.inventory.InventoryUtil;
@@ -65,20 +70,25 @@ public class ListenerInventoryClick implements Listener {
 				if (nbt.hasKey("not_drop_item")) {
 					return;
 				}
+				// 判断背包是否有 此物品
+				if (!holder.getTeamData().getTeamItems().contains(e.getCurrentItem())){
+					player.getInventory().setItem(e.getRawSlot(), null);
+					return;
+				}
 				// 背包已满
 				if (!InventoryUtil.isEmpty(player, 0)) {
 					// 提示信息
 					BSTeamsPlugin.getLanguage().get("Inventory.Drop.Full").send(player);
 				}
 				else {
+					ItemStack item = e.getCurrentItem();
 					// 给予物品
-					player.getInventory().addItem(e.getCurrentItem());
+					player.getInventory().addItem(item);
 					// 删除物品
-					holder.getTeamData().removeTeamItems(e.getCurrentItem());
+					holder.getTeamData().removeTeamItems(item);
 					// 添加日志
-					holder.getTeamData().addItemNote(player, e.getCurrentItem());
-					// 刷新界面
-					holder.getTeamData().updateInventory();
+					holder.getTeamData().addItemNote(player, item);
+
 					
 					// 获取成员
 					List<Player> players = new ArrayList<>();
@@ -92,8 +102,57 @@ public class ListenerInventoryClick implements Listener {
 					// 提示信息
 					BSTeamsPlugin.getLanguage().get("TEAM-DROPS-MESSAGE-TAKE")
 						.addPlaceholder("$player", player.getName())
-						.addPlaceholder("$item", ItemUtils.getCustomName(e.getCurrentItem()) + "§f * " + e.getCurrentItem().getAmount())
+						.addPlaceholder("$item", ItemUtils.getCustomName(item) + "§f * " + item.getAmount())
 						.send(players);
+					
+					// 刷新界面
+//					holder.getTeamData().updateInventory();
+					for (Player member : players) {
+						Inventory topInv = member.getOpenInventory().getTopInventory();
+						if (topInv.getHolder() instanceof DropInventoryHolder) {
+							DropInventoryHolder holders = (DropInventoryHolder) topInv.getHolder();
+							if (holders.getTeamData().equals(holder.getTeamData())) {
+								// 日志
+								ItemStack noteItem = ItemUtils.loadItem(Config.getConfig(), Config.NOTE_ITEM); {
+									ItemMeta meta = noteItem.getItemMeta();
+									// 获取日志
+									if (holder.getTeamData().getItemNotes().size() == 0) {
+										meta.setLore(Arrays.asList("", BSTeamsPlugin.getLanguage().get("Inventory.Drop.Note-Empty").asString()));
+									}
+									else {
+										SimpleDateFormat format = new SimpleDateFormat(Config.getConfig(Config.DATE_FORMAT));
+										List<String> notes = new ArrayList<>();
+										notes.add("");
+										// 遍历日志
+										int i = 1;
+										for (NoteData noteData : holder.getTeamData().getItemNotes()) {
+											notes.add(BSTeamsPlugin.getLanguage().get("Inventory.Drop.Note")
+													.addPlaceholder("$id", String.valueOf(i))
+													.addPlaceholder("$player", noteData.getPlayer())
+													.addPlaceholder("$item", noteData.getItemName())
+													.addPlaceholder("$date", format.format(noteData.getDate()))
+													.asString());
+											i++;
+										}
+										meta.setLore(notes);
+									}
+									noteItem.setItemMeta(meta);
+									topInv.setItem(49, noteItem);
+								}
+								//去掉物品
+								if (member.getName().equals(player.getName())){
+									topInv.setItem(e.getRawSlot(), null);
+									continue;
+								}
+								for (int i=9;i<45;i++){
+									if (topInv.getItem(i) != null && topInv.getItem(i).equals(item)){
+										topInv.setItem(i , null);
+										break;
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}

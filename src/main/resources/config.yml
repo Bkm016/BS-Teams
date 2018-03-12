@@ -61,8 +61,10 @@ Settings:
     radius: 10
   
   # 是否启用掉落物共享
-  share-drops: true
-  
+  share-drops:
+    enable: true
+    size: 56
+
   # 时间格式
   date-format: yyyy-MM-dd HH:mm:ss
   

@@ -52,6 +52,10 @@ public class ListenerPlayerItem implements Listener {
 		if (teamData == null) {
 			return;
 		}
+		// 判断是否超过可拾取数量
+		if(teamData.getTeamItems().size() >= Config.getConfig().getInt(Config.SHARE_DROPS_SIZE)){
+			return;
+		}
 		
 		// 插件启用功能
 		if (Config.getConfig().getBoolean(Config.SHARE_DROPS_ENABLE) 
