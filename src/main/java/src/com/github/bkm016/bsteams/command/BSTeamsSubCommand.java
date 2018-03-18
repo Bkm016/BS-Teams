@@ -18,6 +18,8 @@ import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
 import com.github.bkm016.bsteams.util.PlayerCommand;
 
+import me.skymc.taboolib.message.ChatCatcher;
+import me.skymc.taboolib.message.ChatCatcher.Catcher;
 import me.skymc.taboolib.other.DateUtils;
 
 /**
@@ -71,7 +73,25 @@ public class BSTeamsSubCommand {
 	void onJoinTeamCommand(CommandSender sender, String args[]) {
 		// 不符合规范 可以添加扩展功能 - 显示目前所有在线队伍的 json
 		if (args.length < 2) {
-			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+			ChatCatcher.call((Player) sender, new ChatCatcher.Catcher() {
+				
+				@Override
+				public void cancel() {
+					BSTeamsPlugin.getLanguage().get("TEAM-GUIDE-QUIT").send(sender);
+				}
+				
+				@Override
+				public Catcher before() {
+					BSTeamsPlugin.getLanguage().get("TEAM-GUIDE-JOIN").send(sender);
+					return this;
+				}
+				
+				@Override
+				public boolean after(String message) {
+					Bukkit.getScheduler().runTask(BSTeamsPlugin.getInst(), () -> onJoinTeamCommand(sender, new String[] { "join", message }));
+					return false;
+				}
+			});
 			return;
 		}
 		Player player = (Player) sender;
@@ -87,7 +107,7 @@ public class BSTeamsSubCommand {
 			return;
 		}
 		// 判断队伍是否公开
-		if (!teamData.getTeamOption("PUBLIC",false)){
+		if (!teamData.getTeamOption("PUBLIC", true)){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_PRIVATE_TEAM).send(sender);
 			return;
 		}
@@ -264,8 +284,25 @@ public class BSTeamsSubCommand {
 	@PlayerCommand(cmd = "invite", arg="<player>", type = CommandType.TEAM_LEADER)
 	void onInviteCommand(CommandSender sender, String args[]) {
 		if (args.length < 2) {
-			// 当没有 <player> 时，可以展示在线玩家列表
-			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+			ChatCatcher.call((Player) sender, new ChatCatcher.Catcher() {
+				
+				@Override
+				public void cancel() {
+					BSTeamsPlugin.getLanguage().get("TEAM-GUIDE-QUIT").send(sender);
+				}
+				
+				@Override
+				public Catcher before() {
+					BSTeamsPlugin.getLanguage().get("TEAM-GUIDE-INVITE").send(sender);
+					return this;
+				}
+				
+				@Override
+				public boolean after(String message) {
+					Bukkit.getScheduler().runTask(BSTeamsPlugin.getInst(), () -> onInviteCommand(sender, new String[] { "invite", message }));
+					return false;
+				}
+			});
 			return;
 		}
 		Player invitePlayer = Bukkit.getPlayerExact(args[1]);
