@@ -47,6 +47,13 @@ public class ListenerPlayerItem implements Listener {
 		// 获取物品
 		ItemStack item = e.getItem().getItemStack();
 		
+		// 判断物品是否有lore
+		if (Config.getConfig(Config.SHARE_DROPS_HAS_LORE).equalsIgnoreCase("true")){
+			if (! (item.hasItemMeta() && item.getItemMeta().hasLore())){
+				return;
+			}
+		}
+		
 		// 获取队伍数据
 		TeamData teamData = TeamDataManager.getTeam(player.getName());
 		if (teamData == null) {

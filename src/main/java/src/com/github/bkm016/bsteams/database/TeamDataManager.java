@@ -180,7 +180,7 @@ public class TeamDataManager {
 			public void run() {
 				saveTeamList();
 			}
-		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 600, 600);
+		}.runTaskTimerAsynchronously(BSTeamsPlugin.getInst(), 1200, 1200);
 		
 		// 邀请有效期检查
 		new BukkitRunnable(){

@@ -1,8 +1,5 @@
-# 异步储存
-AsynchronouslySave: true
-
 # 队伍有效期
-TeamRetentionTime: 1d
+TeamRetentionTime: 2d
 
 # 玩家页面
 
@@ -63,6 +60,9 @@ Settings:
   # 是否启用掉落物共享
   share-drops:
     enable: true
+    # 只拾取有lore的物品
+    hasLore: true
+    # 可拾取物品数量
     size: 56
 
   # 时间格式

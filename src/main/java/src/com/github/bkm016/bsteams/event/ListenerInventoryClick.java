@@ -70,6 +70,11 @@ public class ListenerInventoryClick implements Listener {
 				if (nbt.hasKey("not_drop_item")) {
 					return;
 				}
+				// 判断是否还是成员
+				if (!holder.getTeamData().getTeamMembersAll().contains(player.getName())){
+					player.closeInventory();
+					return;
+				}
 				// 判断背包是否有 此物品
 				if (!holder.getTeamData().getTeamItems().contains(e.getCurrentItem())){
 					player.getInventory().setItem(e.getRawSlot(), null);
@@ -89,7 +94,6 @@ public class ListenerInventoryClick implements Listener {
 					// 添加日志
 					holder.getTeamData().addItemNote(player, item);
 
-					
 					// 获取成员
 					List<Player> players = new ArrayList<>();
 					for (String name : holder.getTeamData().getTeamMembersAll()) {

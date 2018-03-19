@@ -35,6 +35,7 @@ public class Config {
 	public static final String SHARE_EXPERIENCE_ENABLE = "Settings.share-experience.enable";
 	public static final String SHARE_EXPERIENCE_RADIUS = "Settings.share-experience.radius";
 	public static final String SHARE_DROPS_ENABLE = "Settings.share-drops.enable";
+	public static final String SHARE_DROPS_HAS_LORE = "Settings.share-drops.hasLore";
 	public static final String SHARE_DROPS_SIZE = "Settings.share-drops.size";
 	public static final String VALIDITY_INVITE = "Settings.invite.validity";
 	public static final String VALIDITY_APPLY = "Settings.apply.validity";
