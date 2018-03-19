@@ -18,6 +18,7 @@ import com.github.bkm016.bsteams.event.ListenerPlayerQuit;
 import com.github.bkm016.bsteams.inventory.DropInventoryHolder;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.util.Message;
+import com.github.bkm016.bsteams.util.Placeholders;
 
 import lombok.Getter;
 import me.skymc.taboolib.string.language2.Language2;
@@ -52,6 +53,14 @@ public class BSTeamsPlugin extends JavaPlugin {
 		TeamDataManager.loadData();
 		// 注册冷却
 		TeamDataManager.registerCooldown();
+		// 载入PlaceholderAPI
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        	new Placeholders(this).hook();
+        	Bukkit.getConsoleSender().sendMessage("[BS-Teams] §7启用 PlacholderAPI");
+        }
+        else {
+        	Bukkit.getConsoleSender().sendMessage("[BS-Teams] §7未找到 PlacholderAPI");
+        }
 		
 		// 监听器
 		Bukkit.getPluginManager().registerEvents(new ListenerPlayerItem(), this);
