@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
+import com.github.bkm016.bsteams.api.BSTeamsPluginAPI;
 import com.github.bkm016.bsteams.book.BookHandler;
 import com.github.bkm016.bsteams.command.enums.CommandType;
 import com.github.bkm016.bsteams.database.TeamDataManager;
@@ -21,12 +22,31 @@ import com.github.bkm016.bsteams.util.PlayerCommand;
 import me.skymc.taboolib.message.ChatCatcher;
 import me.skymc.taboolib.message.ChatCatcher.Catcher;
 import me.skymc.taboolib.other.DateUtils;
+import me.skymc.taboolib.other.NumberUtils;
 
 /**
  * @author sky
  * @since 2018-03-07 23:20:22
  */
 public class BSTeamsSubCommand {
+	
+	@PlayerCommand(cmd = "giveexp", permission = "bsteams.admin")
+	void onEXPCommand(CommandSender sender, String[] args) {
+		if (args.length != 3) {
+			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
+			return;
+		}
+		
+		Player player = Bukkit.getPlayerExact(args[1]);
+		if (player == null) {
+			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_ONLINE).send(sender);
+			return;
+		}
+		
+		BSTeamsPluginAPI.getInst().setExperienceShare(player, false);
+		player.giveExp(NumberUtils.getInteger(args[2]));
+		BSTeamsPluginAPI.getInst().setExperienceShare(player, true);
+	}
 	
 	/**
 	 * 创建队伍
