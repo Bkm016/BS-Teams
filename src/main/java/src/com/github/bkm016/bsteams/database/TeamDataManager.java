@@ -279,10 +279,12 @@ public class TeamDataManager {
 		// 时间
 		double endTimes = ((System.nanoTime() - oldTimes)/1000000D);
 		// 提示
-		BSTeamsPlugin.getLanguage().get("Admin.DataSaved")
+		if (Config.getConfig().getBoolean(Config.SAVE_MESSAGE)){
+			BSTeamsPlugin.getLanguage().get("Admin.DataSaved")
 			.addPlaceholder("$teams", String.valueOf(teamList.size()))
 			.addPlaceholder("$time", String.valueOf(endTimes))
 			.console();
+		}
 	}
 
 }

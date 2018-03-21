@@ -23,7 +23,7 @@ public class Config {
 	@Getter
 	private static FileConfiguration config;
 	
-	public static final String ASYNCHRONOUSLY_SAVE = "AsynchronouslySave";
+	public static final String SAVE_MESSAGE = "SaveMessage";
 	public static final String TEAM_RETENTION_TIME = "TeamRetentionTime";
 	public static final String PAGE_ARROW_NEXT = "Settings.page_next_arrow";
 	public static final String PAGE_ARROW_BACK = "Settings.page_back_arrow";

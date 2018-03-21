@@ -1,7 +1,8 @@
+# 保存信息是否在后台显示
+SaveMessage: true
+
 # 队伍有效期
 TeamRetentionTime: 2d
-
-# 玩家页面
 
 # 插件设置
 Settings:
