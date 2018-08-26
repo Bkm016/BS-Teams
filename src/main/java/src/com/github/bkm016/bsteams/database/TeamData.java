@@ -1,9 +1,6 @@
 package com.github.bkm016.bsteams.database;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -35,7 +32,7 @@ public class TeamData {
 	private List<NoteData> itemNotes = new LinkedList<>();
 	
 	@Getter
-	private HashMap<String, Boolean> teamOptions = new HashMap<>();
+	private Map<String, Boolean> teamOptions = new HashMap<>();
 	
 	@Getter// 队长在的时候更新时间
 	private long teamTimes;
@@ -175,13 +172,7 @@ public class TeamData {
 		return this;
 	}
 	
-	/**
-	 * 快捷删除 
-	 */
-	public void remove(){
-		TeamDataManager.removeTeam(this);
-	}
-	
+
 	/**
 	 * 更新服务器内所有该队伍的物品背包
 	 * 
@@ -223,7 +214,7 @@ public class TeamData {
 	 * @return boolean
 	 */
 	public boolean getTeamOption(String name, boolean defaultValue) {
-		return teamOptions.containsKey(name) ? teamOptions.get(name) : defaultValue;
+		return teamOptions.getOrDefault(name, defaultValue);
 	}
 	
 	/**

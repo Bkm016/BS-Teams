@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,14 +21,20 @@ import com.github.bkm016.bsteams.util.Config;
  * @since 2018-03-08 20:17:09
  */
 public class ListenerPlayerChat implements Listener {
-	
+
+	private final BSTeamsPlugin plugin;
+
+	public ListenerPlayerChat(BSTeamsPlugin plugin) {
+		this.plugin = plugin;
+	}
+
 	@EventHandler (priority = EventPriority.HIGH)
 	public void chat(AsyncPlayerChatEvent e) {
 		if (e.isCancelled() || !Config.getConfig().getBoolean(Config.TEAM_CHAT)) {
 			return;
 		}
 		// 获取队伍
-		TeamData teamData = TeamDataManager.getTeam(e.getPlayer().getName());
+		TeamData teamData = plugin.getTeamDataManager().getTeam(e.getPlayer().getName());
 		if (teamData == null || !e.getMessage().startsWith(BSTeamsPlugin.getLanguage().get("TEAM-CHAT-KEY").asString())) {
 			return;
 		}
@@ -62,7 +67,7 @@ public class ListenerPlayerChat implements Listener {
 					.addPlaceholder("$player", e.getPlayer().getName())
 					.addPlaceholder("$distance", distance)
 					.addPlaceholder("$message", e.getMessage().substring(BSTeamsPlugin.getLanguage().get("TEAM-CHAT-KEY").asString().length()))
-					.send(targets);
+					.send(player);
 				
 				// 音效
 				player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);

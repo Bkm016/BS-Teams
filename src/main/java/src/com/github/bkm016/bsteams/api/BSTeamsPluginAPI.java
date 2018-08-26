@@ -1,5 +1,6 @@
 package com.github.bkm016.bsteams.api;
 
+import com.github.bkm016.bsteams.database.TeamData;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -11,20 +12,21 @@ import com.github.bkm016.bsteams.BSTeamsPlugin;
  * @since 2018-03-08 21:03:20
  */
 public class BSTeamsPluginAPI {
+
+	private final BSTeamsPlugin plugin;
 	
-	private static BSTeamsPluginAPI inst;
-	
-	private BSTeamsPluginAPI() {}
-	
-	public static BSTeamsPluginAPI getInst() {
-		if (inst == null) {
-			synchronized (BSTeamsPluginAPI.class) {
-				if (inst == null) {
-					inst = new BSTeamsPluginAPI();
-				}
-			}
-		}
-		return inst;
+	public BSTeamsPluginAPI(BSTeamsPlugin plugin) {
+		this.plugin = plugin;
+	}
+
+	/**
+	 * 获取TeamData
+	 *
+	 * @param playerName String
+	 * @return TeamData
+	 */
+	public TeamData getTeamData(String playerName){
+		return plugin.getTeamDataManager().getTeam(playerName);
 	}
 	
 	/**

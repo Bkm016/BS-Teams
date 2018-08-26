@@ -3,24 +3,17 @@ package com.github.bkm016.bsteams.command;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
-import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.book.BookHandler;
 import com.github.bkm016.bsteams.command.enums.CommandType;
-import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.database.TeamData;
-import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.util.Message;
 import com.github.bkm016.bsteams.util.PlayerCommand;
 
@@ -29,6 +22,12 @@ import com.github.bkm016.bsteams.util.PlayerCommand;
  * @since 2018-03-06 20:33:23
  */
 public class BSTeamsCommand implements CommandExecutor {
+
+	private BSTeamsPlugin plugin;
+
+	public BSTeamsCommand(BSTeamsPlugin plugin){
+		this.plugin = plugin;
+	}
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String label, String[] args) {
@@ -41,7 +40,7 @@ public class BSTeamsCommand implements CommandExecutor {
     	// 指令类型
     	CommandType type = CommandType.CONSOLE;
     	if (sender instanceof Player){
-			TeamData teamData = TeamDataManager.getTeam(sender.getName());
+			TeamData teamData = plugin.getTeamDataManager().getTeam(sender.getName());
 			if (teamData != null){
 				if (teamData.getTeamLeader().equals(sender.getName())){
 					type = CommandType.TEAM_LEADER;
@@ -80,7 +79,7 @@ public class BSTeamsCommand implements CommandExecutor {
         	}
         	else {
         		// 获取队伍信息
-        		TeamData data = TeamDataManager.getTeam(sender.getName());
+        		TeamData data = plugin.getTeamDataManager().getTeam(sender.getName());
         		if (data == null) {
         			BSTeamsPlugin.getLanguage().get("TEMA-HELP").send((Player) sender);
         		} else {
@@ -101,7 +100,7 @@ public class BSTeamsCommand implements CommandExecutor {
 	                		BSTeamsPlugin.getLanguage().get("Command.blacklist").send(sender);
 	                	} else {
 			                try {
-			                	method.invoke(BSTeamsSubCommand.class.newInstance(), sender, args);
+			                	method.invoke(BSTeamsSubCommand.class.newInstance(), plugin, sender, args);
 			                } catch (Exception e) {
 			                	//
 			                	e.printStackTrace();
@@ -124,12 +123,7 @@ public class BSTeamsCommand implements CommandExecutor {
 	 * @param type2 条件2
 	 * @return boolean
 	 */
-	public static boolean contains(CommandType[] type1, CommandType type2) {
-		for (int i = 0 ; i < type1.length ; i++) {
-			if (type1[i].equals(CommandType.ALL) || type1[i].equals(type2)) {
-				return true;
-			}
-		}
-		return false;
+	private static boolean contains(CommandType[] type1, CommandType type2) {
+		return Arrays.stream(type1).anyMatch(aType1 -> aType1.equals(CommandType.ALL) || aType1.equals(type2));
 	}
 }

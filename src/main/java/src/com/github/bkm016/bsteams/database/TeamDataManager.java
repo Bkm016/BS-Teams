@@ -1,26 +1,19 @@
 package com.github.bkm016.bsteams.database;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
-import com.github.bkm016.bsteams.api.BSTeamsPluginAPI;
 import com.github.bkm016.bsteams.util.Config;
 
 import lombok.Getter;
@@ -31,40 +24,48 @@ import me.skymc.taboolib.playerdata.DataUtils;
 
 public class TeamDataManager {
 	
-	public final static File DATA_FILE = new File("plugins" + File.separator + "BS-Teams" + File.separator + "Data.dat");
+	private final File file = new File(BSTeamsPlugin.getInst().getDataFolder(), "Data.dat");
 	
 	@Getter
-	private static YamlConfiguration data = new YamlConfiguration();
+	private YamlConfiguration data = new YamlConfiguration();
 	
 	@Getter
-	private static ArrayList<TeamData> teamList = new ArrayList<>();
+	private ArrayList<TeamData> teamList = new ArrayList<>();
 	
 	@Getter
-	private static ConcurrentHashMap<String, List<String>> inviteMap = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, List<String>> inviteMap = new ConcurrentHashMap<>();
 	
 	@Getter
-	private static ConcurrentHashMap<String, List<String>> joinMap = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, List<String>> joinMap = new ConcurrentHashMap<>();
 	
 	@Getter
-	private static CooldownPack2 cooldown_invite;
+	private CooldownPack2 cooldownInvite;
 	
 	@Getter
-	private static CooldownPack2 cooldown_apply;
-	
+	private CooldownPack2 cooldownApply;
+
+	private final BSTeamsPlugin plugin;
+
+	public TeamDataManager(BSTeamsPlugin plugin){
+		this.plugin = plugin;
+		loadData();
+		registerCooldown();
+	}
+
 	/**
 	 * 注册冷却
 	 */
-	public static void registerCooldown() {
+	public void registerCooldown() {
 		// 注销冷却
 		CooldownUtils2.unregister("bsteams|cooldown-invite");
 		CooldownUtils2.unregister("bsteams|cooldown-apply");
 		// 注册冷却
-		CooldownUtils2.register(cooldown_invite = new CooldownPack2("bsteams|cooldown-invite", (int) DateUtils.formatDate(Config.getConfig(Config.COOLDOWN_INVITE))), BSTeamsPlugin.getInst());
-		CooldownUtils2.register(cooldown_apply = new CooldownPack2("bsteams|cooldown-apply", (int) DateUtils.formatDate(Config.getConfig(Config.COOLDOWN_APPLY))), BSTeamsPlugin.getInst());
+		CooldownUtils2.register(cooldownInvite = new CooldownPack2("bsteams|cooldown-invite", (int) DateUtils.formatDate(Config.getConfig(Config.COOLDOWN_INVITE))), BSTeamsPlugin.getInst());
+		CooldownUtils2.register(cooldownApply = new CooldownPack2("bsteams|cooldown-apply", (int) DateUtils.formatDate(Config.getConfig(Config.COOLDOWN_APPLY))), BSTeamsPlugin.getInst());
 	}
 	
 	//获取加入列表
-	public static List<String> getjoinList(String playerName){
+	public List<String> getJoinList(String playerName){
 		List<String> joinList = new CopyOnWriteArrayList<>();
 		if (joinMap.containsKey(playerName)){
 			return joinMap.get(playerName);
@@ -75,7 +76,7 @@ public class TeamDataManager {
 	}
 	
 	//获取邀请列表
-	public static List<String> getinviteList(String playerName){
+	public List<String> getInviteList(String playerName){
 		List<String> inviteList = new CopyOnWriteArrayList<String>();
 		if (inviteMap.containsKey(playerName)){
 			return inviteMap.get(playerName);
@@ -86,7 +87,7 @@ public class TeamDataManager {
 	}
 	
 	// 定时清理joinMap
-	static void ClearOverdueJoin(){
+	void ClearOverdueJoin(){
 		for (String key : joinMap.keySet()){
 			List<String> joinList = joinMap.get(key);
 			for (String name : joinList) {
@@ -102,7 +103,7 @@ public class TeamDataManager {
 	}
 	
 	// 定时清理inviteMap
-	static void ClearOverdueInvite(){
+	void ClearOverdueInvite(){
 		for (String key : inviteMap.keySet()){
 			List<String> inviteList = inviteMap.get(key);
 			for (String name : inviteList) {
@@ -118,18 +119,18 @@ public class TeamDataManager {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void loadData() {
+	public void loadData() {
 		// 清空数据
 		teamList.clear();
 		
 		// 检测数据库是否存在
-		if (!DATA_FILE.exists()){
+		if (!file.exists()){
 	        Bukkit.getConsoleSender().sendMessage("[BS-Teams] §c数据不存在，创建数据文件");
 		}
 		else {
 			Bukkit.getConsoleSender().sendMessage("[BS-Teams] §7正在载入队伍数据...");
 			try {
-				data.load(DATA_FILE);
+				data.load(file);
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
@@ -204,7 +205,7 @@ public class TeamDataManager {
 	 * 
 	 * @param player 玩家
 	 */
-	public static TeamData createTeam(Player player){
+	public TeamData createTeam(Player player){
 		TeamData data = new TeamData(player.getName(), null, null, null);
 		teamList.add(data);
 		return data;
@@ -216,7 +217,7 @@ public class TeamDataManager {
 	 * @param playerName 玩家名
 	 * @return boolean
 	 */
-	public static TeamData getTeam(String playerName){
+	public TeamData getTeam(String playerName){
 		for (TeamData teamData : teamList){
 			if (teamData.getTeamLeader().equals(playerName) || teamData.getTeamMembers().contains(playerName)){
 				return teamData;
@@ -231,7 +232,7 @@ public class TeamDataManager {
 	 * @param playerName 玩家名
 	 * @return boolean
 	 */
-	public static boolean isTeamLeader(String playerName){
+	public boolean isTeamLeader(String playerName){
 		return getTeam(playerName) != null && getTeam(playerName).getTeamLeader().equals(playerName);
 	}
 	
@@ -240,7 +241,7 @@ public class TeamDataManager {
 	 * 
 	 * @param teamData 队伍
 	 */
-	public static void removeTeam(TeamData teamData){
+	public void removeTeam(TeamData teamData){
 		if (teamList.contains(teamData)){
 			teamList.remove(teamData);
 		}
@@ -249,7 +250,7 @@ public class TeamDataManager {
 	/**
 	 * 保存队伍列表
 	 */
-	public static void saveTeamList(){
+	public void saveTeamList(){
 		Long oldTimes = System.nanoTime();
 		// 清空数据
 		data = new YamlConfiguration();
@@ -275,7 +276,7 @@ public class TeamDataManager {
 			}
 		}
 		// 保存
-		DataUtils.saveConfiguration(data, DATA_FILE);
+		DataUtils.saveConfiguration(data, file);
 		// 时间
 		double endTimes = ((System.nanoTime() - oldTimes)/1000000D);
 		// 提示

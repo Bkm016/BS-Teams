@@ -1,12 +1,15 @@
 name: BS-Teams
 main: com.github.bkm016.bsteams.BSTeamsPlugin
-version: {$VERSION}
+version: 1.1.0
 
-authors: [Bkm016, Saukiya]
+authors:
+- Bkm016
+- Saukiya
 
-softdepend: [PlaceholderAPI]
+softdepend:
+- PlaceholderAPI
 
 commands:
   bsteams:
-    aliases: [teams,bst]
+    aliases: [teams,bst,bt]
     permission: bsteams.use

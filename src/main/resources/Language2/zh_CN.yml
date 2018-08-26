@@ -79,7 +79,7 @@ Player:
   - '    command: /bst acceptjoin $Player'
   
 # 队伍信息
-TEAM-INFO-TITLE: '      < &l队伍信息 &r>'
+TEAM-INFO-TITLE: '      &8< &8&l队伍信息 &8>'
 TEAM-INFO-CAPTAIN: '&l队长: &r'
 TEAM-INFO-CAPTAIN-ONLINE: '&0$captain&r '
 TEAM-INFO-CAPTAIN-OFFLINE: '&7$captain&r '
@@ -107,7 +107,7 @@ TEAM-INFO-BUTTON-APPLY-TEXT: '&4点击查看队伍申请'
 TEAM-INFO-BUTTON-SPLIT: '&r | '
 
 # 队伍设置
-TEAM-OPTIONS-TITLE: '      < &l队伍设置 &r>'
+TEAM-OPTIONS-TITLE: '      &8< &8&l队伍设置 &7>'
 TEAM-OPTIONS-PUBLIC-NAME: '队伍公开:&r '
 TEAM-OPTIONS-PUBLIC-NAME-TEXT: '&7玩家只能申请加入公开的队伍'
 TEAM-OPTIONS-PUBLIC-ENABLE: '&2是'
@@ -151,7 +151,7 @@ TEAM-DROPS-MESSAGE: '&7[&b队伍&f] &7成员 &f$player &7获得的 &f$item &7已
 TEAM-DROPS-MESSAGE-TAKE: '&7[&b队伍&f] &7成员 &f$player &7从队伍背包中取走了 &f$item'
 
 # 队伍列表
-TEAM-LIST-TITLE: '      < &l队伍列表 &r>'
+TEAM-LIST-TITLE: '      &8< &8&l队伍列表 &8>'
 TEAM-LIST-TEAMS: '&l$number&r. $name ($members/$max)'
 TEAM-LIST-TEAMS-TEXT: '&a点击申请加入 &f$0 &a的队伍'
 TEAM-LIST-EMPTY: '暂无'
@@ -161,7 +161,7 @@ TEAM-LIST-REFRESH: '&2[刷新]'
 TEAM-LIST-REFRESH-TEXT: '&a点击刷新'
 
 # 邀请列表
-TEAM-INVITE-TITLE: '      < &l邀请列表 &r>'
+TEAM-INVITE-TITLE: '      &c< &c&l邀请列表 &8r>'
 TEAM-INVITE-TEAMS: '&l$number&r. $name ($members/$max)'
 TEAM-INVITE-TEAMS-TEXT: '&a点击同意 &f$0 &a的邀请'
 TEAM-INVITE-EMPTY: '暂无'
@@ -173,7 +173,7 @@ TEAM-INVITE-CLEAR: '&4[清空]'
 TEAM-INVITE-CLEAR-TEXT: '&4点击忽略并清空所有邀请'
 
 # 申请列表
-TEAM-APPLY-TITLE: '      < &l申请列表 &r>'
+TEAM-APPLY-TITLE: '      &8< &8&l申请列表 &8>'
 TEAM-APPLY-PLAYER: '&l$number&r. $name'
 TEAM-APPLY-PLAYER-TEXT: '&a点击同意 &f$0 &a的申请'
 TEAM-APPLY-EMPTY: '暂无'
@@ -195,13 +195,13 @@ TEMA-HELP:
 - '       &c< &4&nBS-Teams&c >'
 - ''
 - '&8&m                           '
-- '       &k|&r &l<@1>&r &k|&r'
+- '       &6&k|&r &8&l<@1>&r &6&k|&r'
 - ''
-- '       &k|&r &l<@2>&r &k|&r'
+- '       &6&k|&r &8&l<@2>&r &6&k|&r'
 - ''
-- '       &k|&r &l<@3>&r &k|&r'
+- '       &6&k|&r &8&l<@3>&r &6&k|&r'
 - ''
-- '       &k|&r &l<@4>&r &k|&r'
+- '       &6&k|&r &8&l<@4>&r &6&k|&r'
 - '&8&m                           '
 - '@option:1'
 - '    text: 创建队伍'

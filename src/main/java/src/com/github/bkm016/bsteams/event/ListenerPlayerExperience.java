@@ -22,10 +22,17 @@ import com.github.bkm016.bsteams.util.Config;
  */
 public class ListenerPlayerExperience implements Listener {
 	
+	private final BSTeamsPlugin plugin;
+
+	public ListenerPlayerExperience(BSTeamsPlugin plugin) {
+		this.plugin = plugin;
+	}
+
 	@EventHandler (priority = EventPriority.HIGH)
 	public void onExpericne(PlayerExpChangeEvent e) {
+		if (e.getAmount() == 0) return;
 		// 获取队伍
-		TeamData teamData = TeamDataManager.getTeam(e.getPlayer().getName());
+		TeamData teamData = plugin.getTeamDataManager().getTeam(e.getPlayer().getName());
 		if (teamData == null) {
 			return;
 		}
@@ -35,7 +42,7 @@ public class ListenerPlayerExperience implements Listener {
 				// 队伍启用功能
 				&& teamData.getTeamOption("SHARE-EXPERIENCE", true) 
 				// 玩家启用功能
-				&& BSTeamsPluginAPI.getInst().isExperienceShare(e.getPlayer())) {
+				&& BSTeamsPlugin.getApi().isExperienceShare(e.getPlayer())) {
 			// 获取数据
 			int amount = e.getAmount();
 			// 经验获取者
@@ -72,11 +79,11 @@ public class ListenerPlayerExperience implements Listener {
 			// 增加经验（队友）
 			for (Player member : players) {
 				// 关闭共享
-				BSTeamsPluginAPI.getInst().setExperienceShare(member, false);
+				BSTeamsPlugin.getApi().setExperienceShare(member, false);
 				// 给予经验
 				member.giveExp(average);
 				// 启用共享
-				BSTeamsPluginAPI.getInst().setExperienceShare(member, true);
+				BSTeamsPlugin.getApi().setExperienceShare(member, true);
 				// 提示
 				BSTeamsPlugin.getLanguage().get("TEAM-EXPERIENCE-MEMBER")
 					.addPlaceholder("$player", experience_ownder.getName())
@@ -85,11 +92,11 @@ public class ListenerPlayerExperience implements Listener {
 			}
 			
 			// 关闭共享
-			BSTeamsPluginAPI.getInst().setExperienceShare(e.getPlayer(), false);
+			BSTeamsPlugin.getApi().setExperienceShare(e.getPlayer(), false);
 			// 增加经验（队长）
 			experience_ownder.giveExp(average + remainder);
 			// 启用共享
-			BSTeamsPluginAPI.getInst().setExperienceShare(e.getPlayer(), true);
+			BSTeamsPlugin.getApi().setExperienceShare(e.getPlayer(), true);
 			// 提示
 			BSTeamsPlugin.getLanguage().get("TEAM-EXPERIENCE-LEADER")
 				.addPlaceholder("$players", String.valueOf(players.size()))

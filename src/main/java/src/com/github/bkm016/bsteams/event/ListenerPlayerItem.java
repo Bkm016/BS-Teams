@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -30,10 +28,16 @@ import me.skymc.taboolib.inventory.ItemUtils;
  */
 
 public class ListenerPlayerItem implements Listener {
-	
+
+	private final BSTeamsPlugin plugin;
+
+	public ListenerPlayerItem(BSTeamsPlugin plugin) {
+		this.plugin = plugin;
+	}
+
 	@EventHandler
 	public void onDrop(PlayerDropItemEvent e) {
-		BSTeamsPluginAPI.getInst().setDropNoShare(e.getItemDrop());
+		BSTeamsPlugin.getApi().setDropNoShare(e.getItemDrop());
 	}
 
 	@EventHandler (priority = EventPriority.HIGHEST)
@@ -55,7 +59,7 @@ public class ListenerPlayerItem implements Listener {
 		}
 		
 		// 获取队伍数据
-		TeamData teamData = TeamDataManager.getTeam(player.getName());
+		TeamData teamData = plugin.getTeamDataManager().getTeam(player.getName());
 		if (teamData == null) {
 			return;
 		}
@@ -69,9 +73,9 @@ public class ListenerPlayerItem implements Listener {
 				// 队伍启用功能
 				&& teamData.getTeamOption("SHARE-DROPS", true) 
 				// 玩家启用功能
-				&& BSTeamsPluginAPI.getInst().isDropsShare(e.getPlayer())
+				&& BSTeamsPlugin.getApi().isDropsShare(e.getPlayer())
 				// 物品启用功能
-				&& !BSTeamsPluginAPI.getInst().isDropNoShare(e.getItem())) {
+				&& !BSTeamsPlugin.getApi().isDropNoShare(e.getItem())) {
 			
 			// 执行任务
 			new BukkitRunnable(){

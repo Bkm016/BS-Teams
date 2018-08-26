@@ -10,18 +10,18 @@ import me.clip.placeholderapi.external.EZPlaceholderHook;
 public class Placeholders  extends EZPlaceholderHook{
 	
 	@SuppressWarnings("unused")
-	private BSTeamsPlugin ourPlugin;
+	private BSTeamsPlugin plugin;
 
 	public Placeholders(BSTeamsPlugin ourPlugin) {
 		super(ourPlugin, "bst");
-		this.ourPlugin = ourPlugin;
+		this.plugin = ourPlugin;
 	}
 
 	@Override
 	public String onPlaceholderRequest(Player player, String string) {
 		if (string.equals("team")) {
-			if (TeamDataManager.getTeam(player.getName()) != null){
-				return TeamDataManager.getTeam(player.getName()).getTeamLeader();
+			if (plugin.getTeamDataManager().getTeam(player.getName()) != null){
+				return plugin.getTeamDataManager().getTeam(player.getName()).getTeamLeader();
 			}
 			else {
 				return "N/A";

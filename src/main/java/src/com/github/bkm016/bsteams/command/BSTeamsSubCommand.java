@@ -1,6 +1,5 @@
 package com.github.bkm016.bsteams.command;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -9,10 +8,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
-import com.github.bkm016.bsteams.api.BSTeamsPluginAPI;
 import com.github.bkm016.bsteams.book.BookHandler;
 import com.github.bkm016.bsteams.command.enums.CommandType;
-import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.database.TeamData;
 import com.github.bkm016.bsteams.inventory.DropInventory;
 import com.github.bkm016.bsteams.util.Config;
@@ -31,7 +28,7 @@ import me.skymc.taboolib.other.NumberUtils;
 public class BSTeamsSubCommand {
 	
 	@PlayerCommand(cmd = "giveexp", permission = "bsteams.admin")
-	void onEXPCommand(CommandSender sender, String[] args) {
+	void onEXPCommand(BSTeamsPlugin plugin,CommandSender sender, String[] args) {
 		if (args.length != 3) {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
 			return;
@@ -42,55 +39,58 @@ public class BSTeamsSubCommand {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_ONLINE).send(sender);
 			return;
 		}
-		
-		BSTeamsPluginAPI.getInst().setExperienceShare(player, false);
+
+		BSTeamsPlugin.getApi().setExperienceShare(player, false);
 		player.giveExp(NumberUtils.getInteger(args[2]));
-		BSTeamsPluginAPI.getInst().setExperienceShare(player, true);
+		BSTeamsPlugin.getApi().setExperienceShare(player, true);
 	}
 	
 	/**
 	 * 创建队伍
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "create", type = CommandType.PLAYER)
-	void onCreateTeamCommand(CommandSender sender,String args[]) {
+	void onCreateTeamCommand(BSTeamsPlugin plugin,CommandSender sender,String args[]) {
 		// 提示信息
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_CREATE_TEAM).send(sender);
 		// 打开界面
-		BookHandler.getInst().openInfo((Player) sender, TeamDataManager.createTeam((Player) sender));
+		BookHandler.getInst().openInfo((Player) sender, plugin.getTeamDataManager().createTeam((Player) sender));
 	}
 
 	/**
 	 * 解散队伍
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "dissolve", type = CommandType.TEAM_LEADER)
-	void onRemoveTeamCommand(CommandSender sender, String args[]){
+	void onRemoveTeamCommand(BSTeamsPlugin plugin,CommandSender sender, String args[]){
 		Player player = (Player) sender;
-		TeamData teamData = TeamDataManager.getTeam(player.getName());
+		TeamData teamData = plugin.getTeamDataManager().getTeam(player.getName());
 		// 当背包内有物品时无法解散
 		if (teamData.getTeamItems().size() > 0) {
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_HAS_TEAM_ITEMS).send(player);
 			return;
 		}
 		// 删除队伍
-		teamData.remove();
+		plugin.getTeamDataManager().removeTeam(teamData);
 		// 提示信息
 		BSTeamsPlugin.getLanguage().get(Message.PLAYER_REMOVE_TEAM).send(player);
 	}
 	
 	/**
 	 * 加入队伍
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args  String[]
 	 */
 	@PlayerCommand(cmd = "join", arg="<leader>", type = CommandType.PLAYER)
-	void onJoinTeamCommand(CommandSender sender, String args[]) {
+	void onJoinTeamCommand(BSTeamsPlugin plugin,CommandSender sender, String args[]) {
 		// 不符合规范 可以添加扩展功能 - 显示目前所有在线队伍的 json
 		if (args.length < 2) {
 			ChatCatcher.call((Player) sender, new ChatCatcher.Catcher() {
@@ -108,7 +108,7 @@ public class BSTeamsSubCommand {
 				
 				@Override
 				public boolean after(String message) {
-					Bukkit.getScheduler().runTask(BSTeamsPlugin.getInst(), () -> onJoinTeamCommand(sender, new String[] { "join", message }));
+					Bukkit.getScheduler().runTask(BSTeamsPlugin.getInst(), () -> onJoinTeamCommand(plugin, sender, new String[] { "join", message }));
 					return false;
 				}
 			});
@@ -120,7 +120,7 @@ public class BSTeamsSubCommand {
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_LEADER_NO_ONLINE).send(sender);
 			return;
 		}
-		TeamData teamData = TeamDataManager.getTeam(args[1]);
+		TeamData teamData = plugin.getTeamDataManager().getTeam(args[1]);
 		// 判断队伍名是否为空或者是不是队长
 		if (teamData == null || !teamData.getTeamLeader().equals(leaderPlayer.getName()) || !teamData.getTeamOption("PUBLIC", true)){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
@@ -132,12 +132,12 @@ public class BSTeamsSubCommand {
 			return;
 		}
 		// 判断冷却
-		if (TeamDataManager.getCooldown_apply().isCooldown(sender.getName(), 0)) {
+		if (plugin.getTeamDataManager().getCooldownApply().isCooldown(sender.getName(), 0)) {
 			BSTeamsPlugin.getLanguage().get("Player.CooldownJoin").send(player);
 			return;
 		}
 		// 加入数据储存
-		List<String> joinList = TeamDataManager.getjoinList(args[1]);
+		List<String> joinList = plugin.getTeamDataManager().getJoinList(args[1]);
 		if (joinList.size() > 0){
 			//清除上次的申请记录
 			for(int i = joinList.size() - 1 ; i >= 0 ; i--) {
@@ -160,37 +160,40 @@ public class BSTeamsSubCommand {
 	
 	/**
 	 * 清除玩家申请
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "clearjoin", hide = true, type = CommandType.TEAM_LEADER)
-	void onCleraJoinCommand(CommandSender sender, String[] args) {
-		TeamDataManager.getJoinMap().remove(sender.getName());
+	void onCleraJoinCommand(BSTeamsPlugin plugin,CommandSender sender, String[] args) {
+		plugin.getTeamDataManager().getJoinMap().remove(sender.getName());
 		BSTeamsPlugin.getLanguage().get("Player.ClearJoin").send(sender);
 	}
 	
 	/**
 	 * 清除队伍邀请
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "clearinvite", hide = true, type = CommandType.PLAYER)
-	void onCleraInviteCommand(CommandSender sender, String[] args) {
-		TeamDataManager.getInviteMap().remove(sender.getName());
+	void onCleraInviteCommand(BSTeamsPlugin plugin,CommandSender sender, String[] args) {
+		plugin.getTeamDataManager().getInviteMap().remove(sender.getName());
 		BSTeamsPlugin.getLanguage().get("Player.ClearInvite").send(sender);
 	}
 	
 	/**
 	 * 接受玩家申请
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "acceptJoin", arg="<player>", hide = true ,type = CommandType.TEAM_LEADER)
-	void onAccpetJoinCommand(CommandSender sender, String args[]) {
-		List<String> joinList = TeamDataManager.getjoinList(sender.getName());
+	void onAccpetJoinCommand(BSTeamsPlugin plugin,CommandSender sender, String args[]) {
+		List<String> joinList = plugin.getTeamDataManager().getJoinList(sender.getName());
 		if (args.length < 2) {
 //			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
 //			if (joinList.size() > 0){
@@ -212,7 +215,7 @@ public class BSTeamsSubCommand {
 			if (playerAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() < Long.valueOf(playerAndTime.split(":")[1])){
 				// 接受请求 清除列表
 				joinList.clear();
-				TeamDataManager.getTeam(sender.getName()).addTeamMember(args[1]);
+				plugin.getTeamDataManager().getTeam(sender.getName()).addTeamMember(args[1]);
 				// 提示队长
 				BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_lEADER)
 					.addPlaceholder("$Player", args[1]).send(sender);
@@ -230,17 +233,18 @@ public class BSTeamsSubCommand {
 
 	/**
 	 * 退出队伍
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "kick", type = CommandType.TEAM_LEADER)
-	void onKickMemberCommand(CommandSender sender,String args[]){
+	void onKickMemberCommand(BSTeamsPlugin plugin,CommandSender sender,String args[]){
 		if (args.length < 2) {
 			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
 			return;
 		}
-		TeamData teamData = TeamDataManager.getTeam(sender.getName());
+		TeamData teamData = plugin.getTeamDataManager().getTeam(sender.getName());
 		// 玩家不在队伍里
 		if (!teamData.getTeamMembers().contains(args[1])){
 			BSTeamsPlugin.getLanguage().get("Player.KickNotfound")
@@ -268,14 +272,15 @@ public class BSTeamsSubCommand {
 
 	/**
 	 * 退出队伍
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "quit", type = CommandType.TEAM_MEMBER)
-	void onQuitTeamCommand(CommandSender sender,String args[]){
+	void onQuitTeamCommand(BSTeamsPlugin plugin,CommandSender sender,String args[]){
 		Player player = (Player) sender;
-		TeamData teamData = TeamDataManager.getTeam(player.getName());
+		TeamData teamData = plugin.getTeamDataManager().getTeam(player.getName());
 		// 退出队伍
 		teamData.removeTeamMember(player.getName());
 		// 提示玩家
@@ -297,12 +302,13 @@ public class BSTeamsSubCommand {
 	
 	/**
 	 * 邀请队员
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "invite", arg="<player>", type = CommandType.TEAM_LEADER)
-	void onInviteCommand(CommandSender sender, String args[]) {
+	void onInviteCommand(BSTeamsPlugin plugin,CommandSender sender, String args[]) {
 		if (args.length < 2) {
 			ChatCatcher.call((Player) sender, new ChatCatcher.Catcher() {
 				
@@ -319,7 +325,7 @@ public class BSTeamsSubCommand {
 				
 				@Override
 				public boolean after(String message) {
-					Bukkit.getScheduler().runTask(BSTeamsPlugin.getInst(), () -> onInviteCommand(sender, new String[] { "invite", message }));
+					Bukkit.getScheduler().runTask(BSTeamsPlugin.getInst(), () -> onInviteCommand(plugin, sender, new String[] { "invite", message }));
 					return false;
 				}
 			});
@@ -331,19 +337,19 @@ public class BSTeamsSubCommand {
 			return;
 		}
 		// 识别玩家是否已经在队伍里
-		if (TeamDataManager.getTeam(invitePlayer.getName()) != null){
+		if (plugin.getTeamDataManager().getTeam(invitePlayer.getName()) != null){
 			BSTeamsPlugin.getLanguage().get(Message.PLAYER_PLAYER_HAS_TEAM)
 				.addPlaceholder("$Player", invitePlayer.getName())
 				.send(sender);
 			return;
 		}
 		// 判断冷却
-		if (TeamDataManager.getCooldown_invite().isCooldown(sender.getName(), 0)) {
+		if (plugin.getTeamDataManager().getCooldownInvite().isCooldown(sender.getName(), 0)) {
 			BSTeamsPlugin.getLanguage().get("Player.CooldownInvite").send(sender);
 			return;
 		}
 		// 邀请数据储存 被邀请玩家 - 队长名 - 时间
-		List<String> inviteList = TeamDataManager.getinviteList(invitePlayer.getName());
+		List<String> inviteList = plugin.getTeamDataManager().getInviteList(invitePlayer.getName());
 		if (inviteList.size()>0){
 			//清除上次的申请记录
 			for(int i = inviteList.size() - 1 ; i >= 0 ; i--){
@@ -366,13 +372,14 @@ public class BSTeamsSubCommand {
 	
 	/**
 	 * 接受队伍邀请
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "accept", arg="<leader>", hide = true ,type = CommandType.PLAYER)
-	void onAccpetCommand(CommandSender sender, String args[]) {
-		List<String> inviteList = TeamDataManager.getinviteList(sender.getName());
+	void onAccpetCommand(BSTeamsPlugin plugin,CommandSender sender, String args[]) {
+		List<String> inviteList = plugin.getTeamDataManager().getInviteList(sender.getName());
 		if (args.length < 2) {
 //			BSTeamsPlugin.getLanguage().get(Message.ADMIN_NO_FORMAT).send(sender);
 //			if (inviteList.size() > 0){
@@ -394,7 +401,7 @@ public class BSTeamsSubCommand {
 			if (leaderAndTime.split(":")[0].equals(args[1]) && System.currentTimeMillis() < Long.valueOf(leaderAndTime.split(":")[1])){
 				// 接受请求 清除列表
 				inviteList.clear();
-				TeamDataManager.getTeam(args[1]).addTeamMember(sender.getName());
+				plugin.getTeamDataManager().getTeam(args[1]).addTeamMember(sender.getName());
 				// 输出消息
 				BSTeamsPlugin.getLanguage().get(Message.PLAYER_ACCPET_TO_PLAYER)
 					.addPlaceholder("$Player", args[1]).send(sender);
@@ -411,18 +418,19 @@ public class BSTeamsSubCommand {
 
 	/**
 	 * 队伍列表
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "list")
-	void onListTeamCommand(CommandSender sender,String args[]) {
+	void onListTeamCommand(BSTeamsPlugin plugin,CommandSender sender,String args[]) {
 		if (sender instanceof Player) {
 			BookHandler.getInst().openList((Player) sender);
 		}
 		else {
 			int i=0;
-			for (TeamData teamData: TeamDataManager.getTeamList()){
+			for (TeamData teamData: plugin.getTeamDataManager().getTeamList()){
 				i++;
 				sender.sendMessage(i+"."+teamData.getTeamLeader() + "  人数: "+(teamData.getTeamMembers().size()+1)+"人");
 			}
@@ -431,13 +439,14 @@ public class BSTeamsSubCommand {
 	
 	/**
 	 * 队伍背包
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "open", type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
-	void onOpenCommand(CommandSender sender, String args[]){
-		TeamData teamData = TeamDataManager.getTeam(args.length > 1 && sender.isOp() ? args[1] : sender.getName());
+	void onOpenCommand(BSTeamsPlugin plugin,CommandSender sender, String args[]){
+		TeamData teamData = plugin.getTeamDataManager().getTeam(args.length > 1 && sender.isOp() ? args[1] : sender.getName());
 		if (teamData == null || !teamData.getTeamOption("SHARE-DROPS", true)) {
 			return;
 		}
@@ -449,14 +458,15 @@ public class BSTeamsSubCommand {
 	
 	/**
 	 * 清除日志
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "clearnote", hide = true, type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
-	void clearNoteCommand(CommandSender sender, String args[]) {
+	void clearNoteCommand(BSTeamsPlugin plugin,CommandSender sender, String args[]) {
 		// 清除日志
-		TeamData teamData = TeamDataManager.getTeam(args.length > 1 && sender.isOp() ? args[1] : sender.getName());
+		TeamData teamData = plugin.getTeamDataManager().getTeam(args.length > 1 && sender.isOp() ? args[1] : sender.getName());
 		if (teamData == null) {
 			return;
 		}
@@ -467,35 +477,37 @@ public class BSTeamsSubCommand {
 	
 	/**
 	 * 重载插件
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "reload", permission = "bsteams.reload")
-	void onReloadCommand(CommandSender sender,String args[]){
+	void onReloadCommand(BSTeamsPlugin plugin,CommandSender sender,String args[]){
         Config.loadConfig();
-		TeamDataManager.registerCooldown();
+		plugin.getTeamDataManager().registerCooldown();
         BSTeamsPlugin.getLanguage().reload();
 		BSTeamsPlugin.getLanguage().get(Message.PLUGIN_RELOAD).send(sender);
 	}
 	
 	/**
 	 * 队伍信息
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "info", type = {CommandType.TEAM_LEADER, CommandType.TEAM_MEMBER})
-	void onInfoCommand(CommandSender sender, String args[]) {
+	void onInfoCommand(BSTeamsPlugin plugin,CommandSender sender, String args[]) {
 		Player player = (Player) sender;
 		TeamData teamData = null;
 		if (args.length == 1) {
-			teamData = TeamDataManager.getTeam(player.getName());
+			teamData = plugin.getTeamDataManager().getTeam(player.getName());
 		}
 		else {
 			// 判断权限
 			if (sender.hasPermission("bsteams.admin")) {
-				teamData = TeamDataManager.getTeam(args[1]);
+				teamData = plugin.getTeamDataManager().getTeam(args[1]);
 				// 判断队伍名是否为空或者是不是队长
 				if (teamData == null) {
 					BSTeamsPlugin.getLanguage().get(Message.PLAYER_NO_TEAM).send(player);
@@ -510,15 +522,16 @@ public class BSTeamsSubCommand {
 	
 	/**
 	 * 队伍设置
-	 * 
-	 * @param sender
-	 * @param args
+	 *
+	 * @param plugin BSTeamsPlugin
+	 * @param sender CommandSender
+	 * @param args String[]
 	 */
 	@PlayerCommand(cmd = "option", hide = true, type = CommandType.TEAM_LEADER)
-	void onOptionsCommand(CommandSender sender, String[] args) {
+	void onOptionsCommand(BSTeamsPlugin plugin,CommandSender sender, String[] args) {
 		if (args.length == 3) {
 			Player player = (Player) sender;
-			TeamData teamData = TeamDataManager.getTeam(player.getName());
+			TeamData teamData = plugin.getTeamDataManager().getTeam(player.getName());
 			try {
 				teamData.setTeamOption(args[1], Boolean.valueOf(args[2]));
 				// 提示

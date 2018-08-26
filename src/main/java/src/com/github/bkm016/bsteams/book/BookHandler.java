@@ -1,10 +1,7 @@
 package com.github.bkm016.bsteams.book;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
@@ -13,7 +10,6 @@ import org.bukkit.entity.Player;
 
 import com.github.bkm016.bsteams.BSTeamsPlugin;
 import com.github.bkm016.bsteams.database.TeamData;
-import com.github.bkm016.bsteams.database.TeamDataManager;
 import com.github.bkm016.bsteams.util.Config;
 import com.github.bkm016.spigot.book.BookFormatter;
 import com.github.bkm016.spigot.book.BookFormatter.BookBuilder;
@@ -29,10 +25,17 @@ import me.skymc.taboolib.string.language2.Language2;
 public class BookHandler {
 	
 	private static BookHandler inst;
+
+	private static BSTeamsPlugin plugin;
 	
 	@Getter
 	private HashMap<String, Boolean> options = new LinkedHashMap<>();
-	
+
+	public static void setup(BSTeamsPlugin plugin){
+		if (plugin != null) BookHandler.plugin = plugin;
+	}
+
+
 	private BookHandler() {
 		reloadOptions();
 	}
@@ -128,7 +131,7 @@ public class BookHandler {
 		
 		// 邀请列表
 		int i = 1;
-		for (String name : TeamDataManager.getjoinList(player.getName())) {
+		for (String name : plugin.getTeamDataManager().getJoinList(player.getName())) {
 			// 显示信息
 			String showText = lang.get("TEAM-APPLY-PLAYER")
 					.addPlaceholder("$number", String.valueOf(i))
@@ -190,8 +193,8 @@ public class BookHandler {
 		
 		// 邀请列表
 		int i = 1;
-		for (String name : TeamDataManager.getinviteList(player.getName())) {
-			TeamData team = TeamDataManager.getTeam(name.split(":")[0]);
+		for (String name : plugin.getTeamDataManager().getInviteList(player.getName())) {
+			TeamData team = plugin.getTeamDataManager().getTeam(name.split(":")[0]);
 			if (team == null) {
 				continue;
 			}
@@ -247,7 +250,7 @@ public class BookHandler {
 	 */
 	public void openList(Player player) {
 		// 是否有队伍
-		boolean isFormTeam = TeamDataManager.getTeam(player.getName()) != null;
+		boolean isFormTeam = plugin.getTeamDataManager().getTeam(player.getName()) != null;
 		// 语言文件
 		Language2 lang = BSTeamsPlugin.getLanguage();
 		// 创建书本
@@ -258,7 +261,7 @@ public class BookHandler {
 		
 		// 队伍列表
 		int i = 1;
-		for (TeamData team : TeamDataManager.getTeamList()) {
+		for (TeamData team : plugin.getTeamDataManager().getTeamList()) {
 			// 队长离线
 			if (Bukkit.getPlayerExact(team.getTeamLeader()) == null) {
 				continue;

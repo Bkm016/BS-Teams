@@ -1,7 +1,5 @@
 package com.github.bkm016.bsteams.command.enums;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
 /**
  * @author sky
  * @since 2018-03-07 22:55:49
