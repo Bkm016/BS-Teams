@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BS-Teams:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/BS_Teams_jar</output-path>
+    <root id="archive" name="BS-Teams.jar">
+      <element id="module-output" name="BS-Teams" />
+      <element id="file-copy" path="$PROJECT_DIR$/resources/plugin.yml" />
+      <element id="file-copy" path="$PROJECT_DIR$/resources/config.yml" />
+      <element id="directory" name="Language2">
+        <element id="file-copy" path="$PROJECT_DIR$/resources/Language2/zh_CN.yml" />
+      </element>
+    </root>
+  </artifact>
+</component>
